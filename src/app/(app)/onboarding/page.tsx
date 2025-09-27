@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState } from 'react';
+import { useEffect } from 'react';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -23,7 +23,6 @@ const fixedExpenseSchema = z.object({
 const onboardingSchema = z.object({
   role: z.enum(['Student', 'Professional', 'Housewife']),
   income: z.coerce.number().min(0, 'Income cannot be negative'),
-  dailySpendingLimit: z.coerce.number().min(0, 'Daily limit must be positive'),
   fixedExpenses: z.array(fixedExpenseSchema).optional(),
 });
 
@@ -36,7 +35,6 @@ export default function OnboardingPage() {
     resolver: zodResolver(onboardingSchema),
     defaultValues: {
       income: 10000,
-      dailySpendingLimit: 300,
       fixedExpenses: [{ name: 'Rent', amount: 3000 }],
     },
   });
@@ -45,11 +43,27 @@ export default function OnboardingPage() {
     control: form.control,
     name: "fixedExpenses",
   });
+  
+  const watchedIncome = form.watch('income');
+  const watchedFixedExpenses = form.watch('fixedExpenses');
+
+  const dailySpendingLimit = useEffect(() => {
+    const totalFixedExpenses = watchedFixedExpenses?.reduce((sum, exp) => sum + exp.amount, 0) || 0;
+    const disposableIncome = watchedIncome - totalFixedExpenses;
+    const dailyLimit = disposableIncome > 0 ? disposableIncome / 30 : 0;
+    return dailyLimit;
+  }, [watchedIncome, watchedFixedExpenses]);
+
 
   function onSubmit(data: OnboardingValues) {
+    const totalFixedExpenses = data.fixedExpenses?.reduce((sum, exp) => sum + exp.amount, 0) || 0;
+    const disposableIncome = data.income - totalFixedExpenses;
+    const calculatedDailyLimit = disposableIncome > 0 ? disposableIncome / 30 : 0;
+
     const profileData = {
       ...data,
       fixedExpenses: data.fixedExpenses?.map(exp => ({ ...exp, id: Math.random().toString() })) || [],
+      dailySpendingLimit: calculatedDailyLimit,
     };
     updateProfile(profileData);
     router.push('/dashboard');
@@ -151,21 +165,20 @@ export default function OnboardingPage() {
                     Add Expense
                   </Button>
               </div>
-
-              <FormField
-                  control={form.control}
-                  name="dailySpendingLimit"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Daily Spending Limit (₹)</FormLabel>
-                      <FormControl>
-                        <Input type="number" placeholder="e.g., 300" {...field} />
-                      </FormControl>
-                      <p className="text-sm text-muted-foreground">This is your target for daily discretionary spending.</p>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+              
+              <Card className="bg-secondary">
+                  <CardContent className="p-4">
+                      <div className="flex justify-between items-center">
+                          <div className="space-y-1">
+                            <CardTitle className="text-base font-medium">Calculated Daily Limit</CardTitle>
+                            <CardDescription className="text-xs">Based on your income and fixed expenses.</CardDescription>
+                          </div>
+                          <div className="text-2xl font-bold font-headline">
+                            ₹{((watchedIncome - (watchedFixedExpenses?.reduce((s, e) => s + e.amount, 0) || 0)) / 30).toFixed(2)}
+                          </div>
+                      </div>
+                  </CardContent>
+              </Card>
 
               <Button type="submit" className="w-full" size="lg">Complete Setup</Button>
             </form>
