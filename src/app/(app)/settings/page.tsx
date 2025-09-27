@@ -43,9 +43,9 @@ export default function SettingsPage() {
   const form = useForm<ProfileValues>({
     resolver: zodResolver(profileSchema),
     defaultValues: {
-      role: profile?.role,
-      income: profile?.income,
-      fixedExpenses: profile?.fixedExpenses,
+      role: profile?.role || 'Professional',
+      income: profile?.income || 0,
+      fixedExpenses: profile?.fixedExpenses || [],
     },
   });
 
@@ -107,7 +107,7 @@ export default function SettingsPage() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>What's your current role?</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Select your role" />
