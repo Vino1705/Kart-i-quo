@@ -59,7 +59,7 @@ export default function Chatbot() {
     setIsLoading(true);
 
     try {
-      const fixedExpensesString = profile.fixedExpenses.map(e => `${e.name}: ₹${e.amount}`).join(', ');
+      const fixedExpensesString = JSON.stringify(profile.fixedExpenses.map(e => ({ name: e.name, amount: e.amount })));
       
       const assistantInput: ConversationalFinanceAssistantInput = {
         query: input,
