@@ -9,7 +9,6 @@ import {
   CheckCircle,
   Target,
   PieChart,
-  History,
   LogOut,
   Settings,
   CreditCard,
@@ -18,7 +17,7 @@ import { onAuthStateChanged, getAuth } from 'firebase/auth';
 import firebaseApp from '@/lib/firebase';
 import { AppProvider } from '@/context/app-context';
 import { useApp } from '@/hooks/use-app';
-import { SidebarProvider, Sidebar, SidebarHeader, SidebarContent, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarFooter, SidebarTrigger, SidebarInset } from '@/components/ui/sidebar';
+import { SidebarProvider, Sidebar, SidebarHeader, SidebarContent, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarFooter, SidebarInset } from '@/components/ui/sidebar';
 import { DashboardHeader } from '@/components/dashboard-header';
 import Chatbot from '@/components/chatbot';
 import { Logo } from '@/components/logo';
@@ -29,7 +28,6 @@ const navItems = [
   { href: '/goals', icon: <Target />, label: 'Goals' },
   { href: '/expenses', icon: <PieChart />, label: 'Expenses' },
   { href: '/fixed-expenses', icon: <CreditCard />, label: 'Fixed Expenses' },
-  { href: '/transactions', icon: <History />, label: 'Transactions' },
 ];
 
 function AppLayoutContent({ children }: { children: React.ReactNode }) {
