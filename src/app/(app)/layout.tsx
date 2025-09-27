@@ -33,15 +33,17 @@ const navItems = [
 function AppLayoutContent({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
-  const { onboardingComplete, logout, profile } = useApp();
+  const { logout, profile } = useApp();
   const auth = getAuth(firebaseApp);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, user => {
+      const isOnboardingPage = pathname === '/onboarding';
       if (!user) {
-        router.replace('/login');
+        if (!isOnboardingPage) {
+            router.replace('/login');
+        }
       } else {
-        const isOnboardingPage = pathname === '/onboarding';
         if (profile) {
             if (!profile.role && !isOnboardingPage) {
               router.replace('/onboarding');
@@ -55,11 +57,16 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
     return () => unsubscribe();
   }, [profile, pathname, router, auth]);
 
-  if (!profile) return (
+  if (!profile && pathname !== '/onboarding') return (
      <div className="flex h-screen items-center justify-center">
         <p>Loading your profile...</p>
      </div>
   );
+
+  if (pathname === '/onboarding') {
+    return <>{children}</>;
+  }
+
 
   return (
     <SidebarProvider>
