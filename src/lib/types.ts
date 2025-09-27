@@ -26,6 +26,7 @@ export interface Goal {
   currentAmount: number;
   monthlyContribution: number;
   timelineMonths: number;
+  startDate?: string;
 }
 
 export interface Transaction {

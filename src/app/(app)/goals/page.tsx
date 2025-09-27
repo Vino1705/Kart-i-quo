@@ -12,13 +12,13 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Input } from '@/components/ui/input';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Progress } from '@/components/ui/progress';
-import { PlusCircle, Target, Pencil, Wallet } from 'lucide-react';
+import { PlusCircle, Target, Pencil, Wallet, Clock } from 'lucide-react';
 import { Goal } from '@/lib/types';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip, Legend } from 'recharts';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
 import { Label } from '@/components/ui/label';
+import { differenceInMonths, addMonths, format } from 'date-fns';
 
 
 const goalSchema = z.object({
@@ -39,7 +39,7 @@ function GoalDialog({ goal, children }: { goal?: Goal, children: React.ReactNode
   const form = useForm<GoalValues>({
     resolver: zodResolver(goalSchema),
     defaultValues: isEditMode 
-      ? { name: goal.name, targetAmount: goal.targetAmount, monthlyContribution: goal.monthlyContribution }
+      ? { name: goal.name, targetAmount: goal.targetAmount, monthlyContribution: goal.monthlyContribution, timelineMonths: goal.timelineMonths }
       : { name: '', targetAmount: 10000, monthlyContribution: 1000 },
   });
 
@@ -103,19 +103,34 @@ function GoalDialog({ goal, children }: { goal?: Goal, children: React.ReactNode
                 </FormItem>
               )}
             />
-            <FormField
-              control={form.control}
-              name="targetAmount"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Target Amount (₹)</FormLabel>
-                  <FormControl>
-                    <Input type="number" placeholder="e.g., 80000" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+             <div className="grid grid-cols-2 gap-4">
+                <FormField
+                control={form.control}
+                name="targetAmount"
+                render={({ field }) => (
+                    <FormItem>
+                    <FormLabel>Target Amount (₹)</FormLabel>
+                    <FormControl>
+                        <Input type="number" placeholder="e.g., 80000" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                    </FormItem>
+                )}
+                />
+                 <FormField
+                    control={form.control}
+                    name="timelineMonths"
+                    render={({ field }) => (
+                        <FormItem>
+                        <FormLabel>Timeline (Months)</FormLabel>
+                        <FormControl>
+                            <Input type="number" placeholder="e.g., 12" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                    />
+            </div>
             <FormField
               control={form.control}
               name="monthlyContribution"
@@ -149,13 +164,13 @@ function GoalDialog({ goal, children }: { goal?: Goal, children: React.ReactNode
 }
 
 function ContributeDialog({ goal, children }: { goal: Goal, children: React.ReactNode }) {
-    const { contributeToGoal, profile } = useApp();
+    const { contributeToGoal, profile, getTotalGoalContributions } = useApp();
     const [amount, setAmount] = useState(goal.monthlyContribution);
     const [open, setOpen] = useState(false);
     const { toast } = useToast();
 
     const monthlySavings = profile?.monthlySavings || 0;
-    const goalContributions = (profile?.goals || []).reduce((sum, g) => sum + g.monthlyContribution, 0);
+    const goalContributions = getTotalGoalContributions();
     const emergencyFund = monthlySavings - goalContributions;
 
 
@@ -260,11 +275,18 @@ export default function GoalsPage() {
       {goals.length > 0 ? (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {goals.map(goal => {
-            const progress = (goal.currentAmount / goal.targetAmount) * 100;
+            const amountProgress = (goal.currentAmount / goal.targetAmount) * 100;
             const remainingAmount = goal.targetAmount - goal.currentAmount;
-            const remainingMonths = remainingAmount > 0 && goal.monthlyContribution > 0
+            const remainingMonthsByAmount = remainingAmount > 0 && goal.monthlyContribution > 0
                 ? Math.ceil(remainingAmount / goal.monthlyContribution)
                 : 0;
+
+            let timeProgress = 0;
+            let elapsedMonths = 0;
+            if (goal.startDate && goal.timelineMonths) {
+                elapsedMonths = differenceInMonths(new Date(), new Date(goal.startDate));
+                timeProgress = (elapsedMonths / goal.timelineMonths) * 100;
+            }
             
             return (
               <Card key={goal.id} className="flex flex-col">
@@ -285,11 +307,27 @@ export default function GoalsPage() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="flex-grow space-y-4">
-                  <Progress value={progress} className="w-full" />
-                  <div className="text-sm text-muted-foreground">{progress.toFixed(1)}% complete</div>
-                  <p className="text-xs text-muted-foreground">
-                    {remainingMonths > 0
-                      ? `~${remainingMonths} months remaining at ₹${goal.monthlyContribution.toFixed(2)}/month.`
+                  <div>
+                    <div className="flex justify-between text-sm mb-1">
+                        <span className="text-muted-foreground">Amount Saved</span>
+                        <span>{amountProgress.toFixed(1)}%</span>
+                    </div>
+                    <Progress value={amountProgress} className="w-full h-2" />
+                  </div>
+
+                  {goal.timelineMonths > 0 && goal.startDate && (
+                     <div>
+                        <div className="flex justify-between text-sm mb-1">
+                            <span className="text-muted-foreground">Timeline</span>
+                            <span>{elapsedMonths} of {goal.timelineMonths} months</span>
+                        </div>
+                        <Progress value={timeProgress} className="w-full h-2" />
+                     </div>
+                  )}
+
+                  <p className="text-xs text-muted-foreground pt-2">
+                    {remainingMonthsByAmount > 0
+                      ? `~${remainingMonthsByAmount} months remaining at ₹${goal.monthlyContribution.toFixed(2)}/month.`
                       : "Congratulations! You've reached this goal."
                     }
                   </p>

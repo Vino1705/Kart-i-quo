@@ -7,6 +7,7 @@ import { useToast } from '@/hooks/use-toast';
 import { getAuth, signOut } from 'firebase/auth';
 import firebaseApp from '@/lib/firebase';
 import { useRouter } from 'next/navigation';
+import { formatISO } from 'date-fns';
 
 interface AppContextType {
   profile: UserProfile | null;
@@ -26,8 +27,6 @@ interface AppContextType {
 }
 
 export const AppContext = createContext<AppContextType | undefined>(undefined);
-
-const LAST_CONTRIBUTION_KEY = 'kwik-kash-last-contribution-date';
 
 export const AppProvider = ({ children }: { children: ReactNode }) => {
   const { toast } = useToast();
@@ -61,7 +60,8 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
           targetAmount: 80000,
           currentAmount: 5000,
           monthlyContribution: 5000,
-          timelineMonths: 16
+          timelineMonths: 16,
+          startDate: formatISO(new Date()),
         };
         setGoals([initialGoal]);
         persistState('kwik-kash-goals', [initialGoal]);
@@ -109,6 +109,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       ...goalData,
       id: Date.now().toString(),
       currentAmount: 0,
+      startDate: goalData.timelineMonths ? formatISO(new Date()) : undefined,
     };
     const newGoals = [...goals, newGoal];
     setGoals(newGoals);
@@ -141,7 +142,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
 
   const updateGoal = (goalId: string, updatedData: Partial<Omit<Goal, 'id'>>) => {
     const newGoals = goals.map(g => 
-        g.id === goalId ? { ...g, ...updatedData } : g
+        g.id === goalId ? { ...g, ...updatedData, startDate: (g.timelineMonths && !g.startDate) ? formatISO(new Date()) : g.startDate } : g
     );
     setGoals(newGoals);
     persistState('kwik-kash-goals', newGoals);
@@ -210,7 +211,6 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     localStorage.removeItem('kwik-kash-profile');
     localStorage.removeItem('kwik-kash-goals');
     localStorage.removeItem('kwik-kash-transactions');
-    localStorage.removeItem(LAST_CONTRIBUTION_KEY);
     router.push('/login');
   }
 
