@@ -70,8 +70,13 @@ export default function OnboardingPage() {
 
     const needs = fixed;
     const disposableIncome = income - needs;
-    const wants = disposableIncome >= 0 ? disposableIncome * 0.6 : 0;
-    const savings = disposableIncome >= 0 ? disposableIncome * 0.4 : 0;
+    
+    if (disposableIncome < 0) {
+      return { monthlyNeeds: needs, monthlyWants: 0, monthlySavings: 0, dailyLimit: 0 };
+    }
+
+    const savings = disposableIncome * 0.4;
+    const wants = disposableIncome - savings;
     const daily = wants > 0 ? wants / 30 : 0;
 
     return { monthlyNeeds: needs, monthlyWants: wants, monthlySavings: savings, dailyLimit: daily };
@@ -84,9 +89,16 @@ export default function OnboardingPage() {
     
     const needs = fixed;
     const disposableIncome = income - needs;
-    const wants = disposableIncome >= 0 ? disposableIncome * 0.6 : 0;
-    const savings = disposableIncome >= 0 ? disposableIncome * 0.4 : 0;
-    const daily = wants > 0 ? wants / 30 : 0;
+
+    let wants = 0;
+    let savings = 0;
+    let daily = 0;
+
+    if (disposableIncome >= 0) {
+        savings = disposableIncome * 0.4;
+        wants = disposableIncome - savings;
+        daily = wants > 0 ? wants / 30 : 0;
+    }
 
     const profileData = {
       ...data,
@@ -217,12 +229,12 @@ export default function OnboardingPage() {
               <Card className="bg-secondary/50">
                   <CardHeader>
                     <CardTitle className="text-lg">Your Financial Breakdown</CardTitle>
-                    <CardDescription>After fixed costs, your disposable income is split between Wants (60%) and Savings (40%).</CardDescription>
+                    <CardDescription>After fixed costs, your disposable income is split between Wants and Savings.</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-2">
                     <SummaryCard title="Needs" amount={monthlyNeeds} icon={<Wallet className="h-5 w-5 text-primary" />} description={`Your calculated fixed costs.`} />
-                    <SummaryCard title="Wants" amount={monthlyWants} icon={<ShoppingCart className="h-5 w-5 text-accent" />} description="For discretionary spending." />
-                    <SummaryCard title="Savings" amount={monthlySavings} icon={<PiggyBank className="h-5 w-5 text-green-500" />} description="For goals & emergencies." />
+                    <SummaryCard title="Wants" amount={monthlyWants} icon={<ShoppingCart className="h-5 w-5 text-accent" />} description="For discretionary spending (60% of disposable)." />
+                    <SummaryCard title="Savings" amount={monthlySavings} icon={<PiggyBank className="h-5 w-5 text-green-500" />} description="For goals & emergencies (40% of disposable)." />
                   </CardContent>
                    <CardFooter>
                      <div className="w-full flex justify-between items-center p-3 rounded-lg bg-primary/10">

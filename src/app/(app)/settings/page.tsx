@@ -70,9 +70,16 @@ export default function SettingsPage() {
 
     const needs = fixed;
     const disposableIncome = income - needs;
-    const wants = disposableIncome >= 0 ? disposableIncome * 0.6 : 0;
-    const savings = disposableIncome >= 0 ? disposableIncome * 0.4 : 0;
-    const daily = wants > 0 ? wants / 30 : 0;
+    
+    let wants = 0;
+    let savings = 0;
+    let daily = 0;
+
+    if (disposableIncome >= 0) {
+        savings = disposableIncome * 0.4;
+        wants = disposableIncome - savings;
+        daily = wants > 0 ? wants / 30 : 0;
+    }
 
     const profileData = {
       ...profile,
