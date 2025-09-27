@@ -8,6 +8,7 @@ import { IndianRupee, Target, TrendingUp, TrendingDown } from 'lucide-react';
 import Link from 'next/link';
 import { useApp } from '@/hooks/use-app';
 import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip } from 'recharts';
+import { SavingsIcon } from '@/components/logo';
 
 function StatCard({ title, value, icon, change, changeType }: { title: string, value: string, icon: React.ReactNode, change?: string, changeType?: 'increase' | 'decrease' }) {
   return (
@@ -37,7 +38,7 @@ export default function DashboardPage() {
   
   const todaysSpending = getTodaysSpending();
   const dailyLimit = profile?.dailySpendingLimit || 0;
-  const dailyProfitLoss = dailyLimit - todaysSpending;
+  const dailySavings = dailyLimit - todaysSpending;
 
   const recentTransactions = transactions.slice(0, 7).reverse();
   const chartData = recentTransactions.map(t => ({
@@ -64,8 +65,15 @@ export default function DashboardPage() {
           title="Today's Spending" 
           value={`₹${todaysSpending.toFixed(2)}`}
           icon={<IndianRupee className="h-4 w-4 text-muted-foreground" />}
-          change={dailyProfitLoss >= 0 ? `₹${dailyProfitLoss.toFixed(2)} under limit` : `₹${Math.abs(dailyProfitLoss).toFixed(2)} over limit`}
-          changeType={dailyProfitLoss >= 0 ? 'increase' : 'decrease'}
+          change={dailySavings >= 0 ? `₹${dailySavings.toFixed(2)} under limit` : `₹${Math.abs(dailySavings).toFixed(2)} over limit`}
+          changeType={dailySavings >= 0 ? 'increase' : 'decrease'}
+        />
+        <StatCard
+          title="Daily Savings"
+          value={`₹${(dailySavings > 0 ? dailySavings : 0).toFixed(2)}`}
+          icon={<SavingsIcon className="h-4 w-4 text-muted-foreground" />}
+          change={dailySavings >= 0 ? "On track" : "Over budget"}
+          changeType={dailySavings >= 0 ? "increase" : "decrease"}
         />
         <StatCard 
           title="Total Savings for Goals" 
@@ -75,11 +83,6 @@ export default function DashboardPage() {
         <StatCard 
           title="Monthly Income" 
           value={`₹${profile?.income.toFixed(2)}`}
-          icon={<IndianRupee className="h-4 w-4 text-muted-foreground" />}
-        />
-        <StatCard 
-          title="Fixed Expenses" 
-          value={`₹${profile?.fixedExpenses.reduce((sum, e) => sum + e.amount, 0).toFixed(2)}`}
           icon={<IndianRupee className="h-4 w-4 text-muted-foreground" />}
         />
       </div>
