@@ -55,7 +55,15 @@ const forecastSpendingFlow = ai.defineFlow(
     outputSchema: ForecastSpendingOutputSchema,
   },
   async input => {
-    const {output} = await prompt(input);
-    return output!;
+    try {
+      const {output} = await prompt(input);
+      return output!;
+    } catch (error) {
+      console.error('Error in forecastSpendingFlow:', error);
+      return {
+        predictedLimit: 'Could not generate a forecast at this time.',
+        alerts: 'The AI service is temporarily unavailable. Please try again later.',
+      };
+    }
   }
 );

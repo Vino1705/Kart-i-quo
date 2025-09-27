@@ -63,7 +63,15 @@ const conversationalFinanceAssistantFlow = ai.defineFlow(
     outputSchema: ConversationalFinanceAssistantOutputSchema,
   },
   async input => {
-    const {output} = await prompt(input);
-    return output!;
+    try {
+      const {output} = await prompt(input);
+      return output!;
+    } catch (error) {
+      console.error('Error in conversationalFinanceAssistantFlow:', error);
+      return {
+        response:
+          'Sorry, I am having trouble connecting to my knowledge base right now. Please try again in a moment.',
+      };
+    }
   }
 );

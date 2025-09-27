@@ -94,7 +94,16 @@ const expenseAdjustmentRecommendationsFlow = ai.defineFlow(
     outputSchema: ExpenseAdjustmentRecommendationsOutputSchema,
   },
   async input => {
-    const {output} = await prompt(input);
-    return output!;
+    try {
+      const {output} = await prompt(input);
+      return output!;
+    } catch (error) {
+      console.error('Error in expenseAdjustmentRecommendationsFlow:', error);
+      return {
+        recommendations: [
+          'Sorry, I am having trouble generating recommendations right now. Please try again in a moment.',
+        ],
+      };
+    }
   }
 );
