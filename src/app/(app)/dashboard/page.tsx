@@ -31,7 +31,7 @@ function StatCard({ title, value, icon, change, changeType }: { title: string, v
 }
 
 export default function DashboardPage() {
-  const { profile, goals, transactions, getTodaysSpending, getTotalGoalContributions } = useApp();
+  const { profile, goals, transactions, getTodaysSpending } = useApp();
 
   const totalGoalTarget = goals.reduce((sum, g) => sum + g.targetAmount, 0);
   const totalGoalSaved = goals.reduce((sum, g) => sum + g.currentAmount, 0);
@@ -68,29 +68,23 @@ export default function DashboardPage() {
     goalContributions,
     emergencyFund,
   } = React.useMemo(() => {
-    const income = profile?.income || 0;
-    const fixed = profile?.fixedExpenses?.reduce((sum, exp) => sum + (Number(exp.amount) || 0), 0) || 0;
+    const monthlyNeeds = profile?.monthlyNeeds || 0;
+    const monthlyWants = profile?.monthlyWants || 0;
+    const monthlySavings = profile?.monthlySavings || 0;
+    const dailySpendingLimit = profile?.dailySpendingLimit || 0;
 
-    const needs = fixed;
-    const disposableIncome = income - needs;
-    
-    const wants = disposableIncome >= 0 ? disposableIncome * 0.6 : 0;
-    const savings = disposableIncome >= 0 ? disposableIncome * 0.4 : 0;
-    
-    const dailyLimit = wants > 0 ? wants / 30 : 0;
-
-    const totalGoalContributions = getTotalGoalContributions();
-    const emergency = Math.max(0, savings - totalGoalContributions);
+    const totalGoalContributions = goals.reduce((sum, g) => sum + g.monthlyContribution, 0);
+    const emergency = Math.max(0, monthlySavings - totalGoalContributions);
 
     return {
-      monthlyNeeds: needs,
-      monthlyWants: wants,
-      monthlySavings: savings,
-      dailySpendingLimit: dailyLimit,
+      monthlyNeeds,
+      monthlyWants,
+      monthlySavings,
+      dailySpendingLimit,
       goalContributions: totalGoalContributions,
       emergencyFund: emergency,
     };
-  }, [profile, getTotalGoalContributions]);
+  }, [profile, goals]);
   
   const dailySavings = dailySpendingLimit - todaysSpending;
 

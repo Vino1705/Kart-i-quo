@@ -18,6 +18,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip, Legend } from 'recharts';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
+import { Label } from '@/components/ui/label';
 
 
 const goalSchema = z.object({
@@ -148,13 +149,13 @@ function GoalDialog({ goal, children }: { goal?: Goal, children: React.ReactNode
 }
 
 function ContributeDialog({ goal, children }: { goal: Goal, children: React.ReactNode }) {
-    const { contributeToGoal, profile, getTotalGoalContributions } = useApp();
+    const { contributeToGoal, profile } = useApp();
     const [amount, setAmount] = useState(goal.monthlyContribution);
     const [open, setOpen] = useState(false);
     const { toast } = useToast();
 
     const monthlySavings = profile?.monthlySavings || 0;
-    const goalContributions = getTotalGoalContributions();
+    const goalContributions = (profile?.goals || []).reduce((sum, g) => sum + g.monthlyContribution, 0);
     const emergencyFund = monthlySavings - goalContributions;
 
 
@@ -180,7 +181,7 @@ function ContributeDialog({ goal, children }: { goal: Goal, children: React.Reac
                 </DialogHeader>
                 <div className="space-y-4 py-4">
                     <div className="space-y-2">
-                        <FormLabel>Contribution Amount (₹)</FormLabel>
+                        <Label>Contribution Amount (₹)</Label>
                         <Input 
                             type="number" 
                             value={amount} 
@@ -204,7 +205,7 @@ function ContributeDialog({ goal, children }: { goal: Goal, children: React.Reac
 }
 
 export default function GoalsPage() {
-  const { goals } = useApp();
+  const { goals, contributeToGoals, canContribute } = useApp();
   
   const chartData = useMemo(() => {
     return goals.map(goal => ({
@@ -219,6 +220,10 @@ export default function GoalsPage() {
       <div className="flex items-center justify-between gap-4 flex-wrap">
         <h1 className="text-2xl font-bold font-headline">Your Financial Goals</h1>
         <div className="flex gap-2">
+            <Button onClick={contributeToGoals} disabled={!canContribute}>
+                <Wallet className="mr-2 h-4 w-4" />
+                {canContribute ? "Contribute This Month's Savings" : "Contribution Done"}
+            </Button>
             <GoalDialog>
                 <Button>
                   <PlusCircle className="mr-2 h-4 w-4" />

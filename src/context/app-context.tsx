@@ -23,9 +23,13 @@ interface AppContextType {
   deleteTransaction: (transactionId: string) => void;
   getTotalGoalContributions: () => number;
   contributeToGoal: (goalId: string, amount: number) => void;
+  contributeToGoals: () => void;
+  canContribute: boolean;
 }
 
 export const AppContext = createContext<AppContextType | undefined>(undefined);
+
+const LAST_CONTRIBUTION_KEY = 'kwik-kash-last-contribution-date';
 
 export const AppProvider = ({ children }: { children: ReactNode }) => {
   const { toast } = useToast();
@@ -34,6 +38,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   const [goals, setGoals] = useState<Goal[]>([]);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [onboardingComplete, setOnboardingComplete] = useState(false);
+  const [canContribute, setCanContribute] = useState(true);
 
   useEffect(() => {
     // Attempt to load data from localStorage to persist state
@@ -41,6 +46,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       const storedProfile = localStorage.getItem('kwik-kash-profile');
       const storedGoals = localStorage.getItem('kwik-kash-goals');
       const storedTransactions = localStorage.getItem('kwik-kash-transactions');
+      const lastContributionDate = localStorage.getItem(LAST_CONTRIBUTION_KEY);
 
       if (storedProfile) {
         const parsedProfile = JSON.parse(storedProfile);
@@ -78,6 +84,14 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         setTransactions([initialTransaction]);
         persistState('kwik-kash-transactions', [initialTransaction]);
       }
+
+      if (lastContributionDate) {
+        const lastDate = new Date(lastContributionDate);
+        const today = new Date();
+        if (lastDate.getFullYear() === today.getFullYear() && lastDate.getMonth() === today.getMonth()) {
+          setCanContribute(false);
+        }
+      }
     } catch (error) {
       console.error("Failed to load data from localStorage", error);
     }
@@ -92,8 +106,11 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const updateProfile = (newProfileData: Partial<UserProfile>) => {
-    const updatedProfile = { ...profile, ...newProfileData } as UserProfile;
+    const updatedProfile = { ...profile, ...newProfileData, goals: newProfileData.goals || profile?.goals } as UserProfile;
     setProfile(updatedProfile);
+    if(newProfileData.goals) {
+      setGoals(newProfileData.goals);
+    }
     setOnboardingComplete(true);
     persistState('kwik-kash-profile', updatedProfile);
   };
@@ -181,7 +198,8 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   const contributeToGoal = (goalId: string, amount: number) => {
     const newGoals = goals.map(goal => {
       if (goal.id === goalId) {
-        return { ...goal, currentAmount: goal.currentAmount + amount };
+        const newCurrentAmount = goal.currentAmount + amount;
+        return { ...goal, currentAmount: newCurrentAmount > goal.targetAmount ? goal.targetAmount : newCurrentAmount };
       }
       return goal;
     });
@@ -193,6 +211,29 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     });
   };
 
+  const contributeToGoals = () => {
+    if (!canContribute) {
+        toast({ title: "Already Contributed", description: "You've already contributed this month."});
+        return;
+    }
+    const newGoals = goals.map(g => ({
+      ...g,
+      currentAmount: Math.min(g.targetAmount, g.currentAmount + g.monthlyContribution),
+    }));
+    setGoals(newGoals);
+    persistState('kwik-kash-goals', newGoals);
+    
+    const today = new Date();
+    localStorage.setItem(LAST_CONTRIBUTION_KEY, today.toISOString());
+    setCanContribute(false);
+
+    toast({
+      title: 'Contributions Added!',
+      description: `You've successfully contributed to all your goals for this month.`,
+    });
+  };
+
+
   const logout = async () => {
     const auth = getAuth(firebaseApp);
     await signOut(auth);
@@ -203,7 +244,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     localStorage.removeItem('kwik-kash-profile');
     localStorage.removeItem('kwik-kash-goals');
     localStorage.removeItem('kwik-kash-transactions');
-    localStorage.removeItem('kwik-kash-last-contribution-date');
+    localStorage.removeItem(LAST_CONTRIBUTION_KEY);
     router.push('/login');
   }
 
@@ -222,6 +263,8 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     deleteTransaction,
     getTotalGoalContributions,
     contributeToGoal,
+    contributeToGoals,
+    canContribute,
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
