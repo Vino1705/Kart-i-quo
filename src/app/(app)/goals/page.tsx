@@ -112,7 +112,9 @@ export default function GoalsPage() {
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {goals.map(goal => {
             const progress = (goal.currentAmount / goal.targetAmount) * 100;
-            const dailySavings = goal.targetAmount / (goal.timelineMonths * 30);
+            const remainingAmount = goal.targetAmount - goal.currentAmount;
+            const dailySavings = remainingAmount > 0 ? remainingAmount / (goal.timelineMonths * 30) : 0;
+            
             return (
               <Card key={goal.id}>
                 <CardHeader>
@@ -130,7 +132,10 @@ export default function GoalsPage() {
                 </CardContent>
                 <CardFooter>
                   <p className="text-xs text-muted-foreground">
-                    Save ~₹{dailySavings.toFixed(2)} daily to reach your goal in {goal.timelineMonths} months.
+                    {dailySavings > 0 
+                      ? `Save ~₹${dailySavings.toFixed(2)} daily to reach your goal in ${goal.timelineMonths} months.`
+                      : "Congratulations! You've reached this goal."
+                    }
                   </p>
                 </CardFooter>
               </Card>
