@@ -50,7 +50,7 @@ function GoalDialog({ goal, children }: { goal?: Goal, children: React.ReactNode
     return { timelineMonths: 0, suggestion: 'Enter an amount and contribution to see a forecast.' };
   }, [targetAmount, monthlyContribution]);
 
-  const totalSavings = profile?.monthlySavings || 0;
+  const totalSavings = (profile?.monthlySavings || 0);
   const committedContributions = getTotalGoalContributions() - (goal?.monthlyContribution || 0);
   const availableSavings = totalSavings - committedContributions;
 
@@ -58,15 +58,15 @@ function GoalDialog({ goal, children }: { goal?: Goal, children: React.ReactNode
     if (data.monthlyContribution > availableSavings) {
         form.setError("monthlyContribution", {
             type: "manual",
-            message: "Your monthly contribution exceeds your available savings."
+            message: `Contribution exceeds available savings of ₹${availableSavings.toFixed(2)}.`
         });
         return;
     }
 
     if (isEditMode) {
-      updateGoal(goal.id, data);
+      updateGoal(goal.id, {...data, timelineMonths });
     } else {
-      addGoal(data);
+      addGoal({...data, timelineMonths });
     }
     form.reset();
     setOpen(false);
@@ -127,7 +127,11 @@ function GoalDialog({ goal, children }: { goal?: Goal, children: React.ReactNode
                 <Target className="h-4 w-4" />
                 <AlertDescription>
                     <p>{suggestion}</p>
-                    <p className="font-medium mt-2">Available for Goals: ₹{availableSavings.toFixed(2)} / month</p>
+                    { availableSavings >= 0 ?
+                        <p className="font-medium mt-2">Available for Goals: ₹{availableSavings.toFixed(2)} / month</p>
+                        :
+                        <p className="font-medium mt-2 text-destructive">You've committed all your savings.</p>
+                    }
                 </AlertDescription>
             </Alert>
             <Button type="submit" className="w-full">{isEditMode ? 'Save Changes' : 'Save Goal'}</Button>

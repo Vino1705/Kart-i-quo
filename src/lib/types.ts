@@ -1,3 +1,4 @@
+
 export type UserRole = 'Student' | 'Professional' | 'Housewife' | '';
 
 export interface UserProfile {
@@ -24,6 +25,7 @@ export interface Goal {
   targetAmount: number;
   currentAmount: number;
   monthlyContribution: number;
+  timelineMonths: number;
 }
 
 export interface Transaction {
