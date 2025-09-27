@@ -1,23 +1,23 @@
 
 "use client";
 
-import { useEffect } from 'react';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useApp } from '@/hooks/use-app';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Trash } from 'lucide-react';
+import { Trash, Wallet, PiggyBank, ShoppingCart } from 'lucide-react';
+import React from 'react';
 
 const fixedExpenseSchema = z.object({
   name: z.string().min(1, 'Expense name is required'),
-  amount: z.coerce.number().min(1, 'Amount must be positive'),
+  amount: z.coerce.number().min(0, 'Amount must be positive'),
 });
 
 const onboardingSchema = z.object({
@@ -27,6 +27,18 @@ const onboardingSchema = z.object({
 });
 
 type OnboardingValues = z.infer<typeof onboardingSchema>;
+
+function SummaryCard({ title, amount, icon }: { title: string; amount: number; icon: React.ReactNode }) {
+    return (
+        <div className="flex items-center justify-between rounded-lg bg-muted p-3">
+            <div className="flex items-center gap-3">
+                {icon}
+                <span className="text-sm font-medium text-muted-foreground">{title}</span>
+            </div>
+            <div className="text-sm font-bold">₹{amount.toFixed(2)}</div>
+        </div>
+    )
+}
 
 export default function OnboardingPage() {
   const { updateProfile } = useApp();
@@ -47,23 +59,38 @@ export default function OnboardingPage() {
   const watchedIncome = form.watch('income');
   const watchedFixedExpenses = form.watch('fixedExpenses');
 
-  const dailySpendingLimit = useEffect(() => {
-    const totalFixedExpenses = watchedFixedExpenses?.reduce((sum, exp) => sum + exp.amount, 0) || 0;
-    const disposableIncome = watchedIncome - totalFixedExpenses;
-    const dailyLimit = disposableIncome > 0 ? disposableIncome / 30 : 0;
-    return dailyLimit;
+  const { monthlyNeeds, monthlyWants, monthlySavings, dailyLimit } = React.useMemo(() => {
+    const totalFixed = watchedFixedExpenses?.reduce((sum, exp) => sum + exp.amount, 0) || 0;
+    const disposableIncome = watchedIncome - totalFixed;
+    
+    if (disposableIncome <= 0) {
+      return { monthlyNeeds: totalFixed, monthlyWants: 0, monthlySavings: 0, dailyLimit: 0 };
+    }
+
+    const needs = totalFixed;
+    const wants = disposableIncome * 0.3;
+    const savings = disposableIncome * 0.2;
+    const daily = wants / 30;
+
+    return { monthlyNeeds: needs, monthlyWants: wants, monthlySavings: savings, dailyLimit: daily };
   }, [watchedIncome, watchedFixedExpenses]);
 
 
   function onSubmit(data: OnboardingValues) {
-    const totalFixedExpenses = data.fixedExpenses?.reduce((sum, exp) => sum + exp.amount, 0) || 0;
-    const disposableIncome = data.income - totalFixedExpenses;
-    const calculatedDailyLimit = disposableIncome > 0 ? disposableIncome / 30 : 0;
+    const totalFixed = data.fixedExpenses?.reduce((sum, exp) => sum + exp.amount, 0) || 0;
+    const disposableIncome = data.income - totalFixed;
+    
+    const wants = disposableIncome > 0 ? disposableIncome * 0.3 : 0;
+    const savings = disposableIncome > 0 ? disposableIncome * 0.2 : 0;
+    const calculatedDailyLimit = wants / 30;
 
     const profileData = {
       ...data,
       fixedExpenses: data.fixedExpenses?.map(exp => ({ ...exp, id: Math.random().toString() })) || [],
       dailySpendingLimit: calculatedDailyLimit,
+      monthlyNeeds: totalFixed,
+      monthlyWants: wants,
+      monthlySavings: savings,
     };
     updateProfile(profileData);
     router.push('/dashboard');
@@ -74,7 +101,7 @@ export default function OnboardingPage() {
       <Card className="w-full max-w-2xl">
         <CardHeader>
           <CardTitle className="text-2xl font-headline">Welcome to Kwik Kash!</CardTitle>
-          <CardDescription>Let's set up your financial profile. This will help us tailor your experience.</CardDescription>
+          <CardDescription>Let's set up your financial profile to tailor your experience.</CardDescription>
         </CardHeader>
         <CardContent>
           <Form {...form}>
@@ -166,18 +193,25 @@ export default function OnboardingPage() {
                   </Button>
               </div>
               
-              <Card className="bg-secondary">
-                  <CardContent className="p-4">
-                      <div className="flex justify-between items-center">
-                          <div className="space-y-1">
-                            <CardTitle className="text-base font-medium">Calculated Daily Limit</CardTitle>
-                            <CardDescription className="text-xs">Based on your income and fixed expenses.</CardDescription>
-                          </div>
-                          <div className="text-2xl font-bold font-headline">
-                            ₹{((watchedIncome - (watchedFixedExpenses?.reduce((s, e) => s + e.amount, 0) || 0)) / 30).toFixed(2)}
-                          </div>
-                      </div>
+              <Card className="bg-secondary/50">
+                  <CardHeader>
+                    <CardTitle className="text-lg">Your Financial Breakdown</CardTitle>
+                    <CardDescription>Based on the 50/30/20 rule, here's our suggestion.</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-2">
+                    <SummaryCard title="Needs (Fixed Expenses)" amount={monthlyNeeds} icon={<Wallet className="h-5 w-5 text-primary" />} />
+                    <SummaryCard title="Wants (Discretionary)" amount={monthlyWants} icon={<ShoppingCart className="h-5 w-5 text-accent" />} />
+                    <SummaryCard title="Savings" amount={monthlySavings} icon={<PiggyBank className="h-5 w-5 text-green-500" />} />
                   </CardContent>
+                   <CardFooter>
+                     <div className="w-full flex justify-between items-center p-3 rounded-lg bg-primary/10">
+                        <div className="flex flex-col">
+                            <span className="text-sm font-semibold">Suggested Daily Spending</span>
+                            <span className="text-xs text-muted-foreground">This is your 'Wants' budget per day.</span>
+                        </div>
+                        <div className="text-xl font-bold font-headline text-primary">₹{dailyLimit.toFixed(2)}</div>
+                     </div>
+                  </CardFooter>
               </Card>
 
               <Button type="submit" className="w-full" size="lg">Complete Setup</Button>

@@ -5,6 +5,9 @@ export interface UserProfile {
   income: number;
   fixedExpenses: FixedExpense[];
   dailySpendingLimit: number;
+  monthlyNeeds: number;
+  monthlyWants: number;
+  monthlySavings: number;
 }
 
 export interface FixedExpense {
