@@ -60,9 +60,10 @@ export default function OnboardingPage() {
   const watchedFixedExpenses = form.watch('fixedExpenses');
 
   const { monthlyNeeds, monthlyWants, monthlySavings, dailyLimit } = React.useMemo(() => {
-    const totalFixed = watchedFixedExpenses?.reduce((sum, exp) => sum + exp.amount, 0) || 0;
-    const disposableIncome = watchedIncome - totalFixed;
-    
+    const income = Number(watchedIncome) || 0;
+    const totalFixed = watchedFixedExpenses?.reduce((sum, exp) => sum + (Number(exp.amount) || 0), 0) || 0;
+    const disposableIncome = income - totalFixed;
+
     if (disposableIncome <= 0) {
       return { monthlyNeeds: totalFixed, monthlyWants: 0, monthlySavings: 0, dailyLimit: 0 };
     }
