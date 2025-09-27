@@ -67,7 +67,7 @@ export default function DashboardPage() {
         emergencyFund: 0,
       };
     }
-  
+    
     const totalGoalContributions = goals.reduce((sum, g) => sum + g.monthlyContribution, 0);
     const emergency = Math.max(0, profile.monthlySavings - totalGoalContributions);
   
