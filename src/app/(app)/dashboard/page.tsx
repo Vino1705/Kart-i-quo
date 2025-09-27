@@ -40,6 +40,10 @@ export default function DashboardPage() {
   const dailyLimit = profile?.dailySpendingLimit || 0;
   const dailySavings = dailyLimit - todaysSpending;
 
+  const overallSpending = transactions.reduce((sum, t) => sum + t.amount, 0);
+  const income = profile?.income || 0;
+  const spendingVsIncome = income > 0 ? ((overallSpending / income) * 100).toFixed(0) + '% of income' : '';
+
   const recentTransactions = transactions.slice(0, 7).reverse();
   const chartData = recentTransactions.map(t => ({
       date: new Date(t.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short'}),
@@ -62,17 +66,17 @@ export default function DashboardPage() {
     <div className="space-y-6">
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <StatCard 
-          title="Today's Spending" 
-          value={`₹${todaysSpending.toFixed(2)}`}
+          title="Overall Spending" 
+          value={`₹${overallSpending.toFixed(2)}`}
           icon={<IndianRupee className="h-4 w-4 text-muted-foreground" />}
-          change={dailySavings >= 0 ? `₹${dailySavings.toFixed(2)} under limit` : `₹${Math.abs(dailySavings).toFixed(2)} over limit`}
-          changeType={dailySavings >= 0 ? 'increase' : 'decrease'}
+          change={spendingVsIncome}
+          changeType={income > overallSpending ? 'increase' : 'decrease'}
         />
         <StatCard
           title="Daily Savings"
           value={`₹${(dailySavings > 0 ? dailySavings : 0).toFixed(2)}`}
           icon={<SavingsIcon className="h-4 w-4 text-muted-foreground" />}
-          change={dailySavings >= 0 ? "On track" : "Over budget"}
+          change={dailySavings >= 0 ? "On track today" : "Over budget today"}
           changeType={dailySavings >= 0 ? "increase" : "decrease"}
         />
         <StatCard 
