@@ -49,6 +49,40 @@ export default function DashboardPage() {
       amount: t.amount,
   }));
 
+  const {
+    monthlyNeeds,
+    monthlyWants,
+    monthlySavings,
+    dailySpendingLimit,
+    goalContributions,
+    emergencyFund,
+  } = React.useMemo(() => {
+    if (!profile) {
+      return {
+        monthlyNeeds: 0,
+        monthlyWants: 0,
+        monthlySavings: 0,
+        dailySpendingLimit: 0,
+        goalContributions: 0,
+        emergencyFund: 0,
+      };
+    }
+  
+    const totalGoalContributions = goals.reduce((sum, g) => sum + g.monthlyContribution, 0);
+    const emergency = Math.max(0, profile.monthlySavings - totalGoalContributions);
+  
+    return {
+      monthlyNeeds: profile.monthlyNeeds,
+      monthlyWants: profile.monthlyWants,
+      monthlySavings: profile.monthlySavings,
+      dailySpendingLimit: profile.dailySpendingLimit,
+      goalContributions: totalGoalContributions,
+      emergencyFund: emergency,
+    };
+  }, [profile, goals]);
+  
+  const dailySavings = dailySpendingLimit - todaysSpending;
+
   if (!profile) {
     return (
       <div className="text-center">
@@ -60,45 +94,6 @@ export default function DashboardPage() {
       </div>
     );
   }
-
-  const {
-    monthlyNeeds,
-    monthlyWants,
-    monthlySavings,
-    dailySpendingLimit,
-    goalContributions,
-    emergencyFund,
-  } = React.useMemo(() => {
-    const income = profile?.income || 0;
-    const needs = profile?.fixedExpenses.reduce((sum, exp) => sum + exp.amount, 0) || 0;
-    
-    // 50/30/20 rule
-    const calculatedNeeds = income * 0.5;
-    const calculatedWants = income * 0.3;
-    const calculatedSavings = income * 0.2;
-
-    const profileData = {
-      ...profile,
-      monthlyNeeds: calculatedNeeds,
-      monthlyWants: calculatedWants,
-      monthlySavings: calculatedSavings,
-      dailySpendingLimit: calculatedWants / 30,
-    };
-
-    const totalGoalContributions = goals.reduce((sum, g) => sum + g.monthlyContribution, 0);
-    const emergency = Math.max(0, profileData.monthlySavings - totalGoalContributions);
-
-    return {
-      monthlyNeeds: profileData.monthlyNeeds,
-      monthlyWants: profileData.monthlyWants,
-      monthlySavings: profileData.monthlySavings,
-      dailySpendingLimit: profileData.dailySpendingLimit,
-      goalContributions: totalGoalContributions,
-      emergencyFund: emergency,
-    };
-  }, [profile, goals]);
-  
-  const dailySavings = dailySpendingLimit - todaysSpending;
 
   return (
     <div className="space-y-6">
@@ -132,24 +127,24 @@ export default function DashboardPage() {
        <Card>
         <CardHeader>
           <CardTitle>Financial Breakdown</CardTitle>
-          <CardDescription>Your monthly budget is allocated across Needs, Wants, and Savings following the 50/30/20 rule.</CardDescription>
+          <CardDescription>Your monthly budget allocated across Needs, Wants, and Savings.</CardDescription>
         </CardHeader>
         <CardContent className="grid gap-4 md:grid-cols-3">
           <StatCard
-            title="Needs (50%)"
+            title="Needs"
             value={`₹${monthlyNeeds.toFixed(2)}`}
             icon={<Wallet className="h-5 w-5 text-primary" />}
-            change={`Target for fixed expenses`}
+            change={`Your fixed monthly expenses`}
           />
           <StatCard
-            title="Wants (30%)"
+            title="Wants"
             value={`₹${monthlyWants.toFixed(2)}`}
             icon={<ShoppingCart className="h-5 w-5 text-accent" />}
-            change={`≈ ₹${dailySpendingLimit.toFixed(2)} / day`}
+            change={`≈ ₹${dailySpendingLimit.toFixed(2)} / day for spending`}
           />
           <Card>
              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium">Savings (20%)</CardTitle>
+                <CardTitle className="text-sm font-medium">Savings</CardTitle>
              </CardHeader>
              <CardContent className="space-y-2">
                 <div className="flex justify-between items-center text-sm">
