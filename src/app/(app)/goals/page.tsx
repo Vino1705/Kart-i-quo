@@ -12,7 +12,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Input } from '@/components/ui/input';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Progress } from '@/components/ui/progress';
-import { PlusCircle, Target, Pencil } from 'lucide-react';
+import { PlusCircle, Target, Pencil, Wallet } from 'lucide-react';
 import { Goal } from '@/lib/types';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip, Legend } from 'recharts';
@@ -145,7 +145,7 @@ function GoalDialog({ goal, children }: { goal?: Goal, children: React.ReactNode
 }
 
 export default function GoalsPage() {
-  const { goals } = useApp();
+  const { goals, contributeToGoals, lastContributionDate } = useApp();
   
   const chartData = useMemo(() => {
     return goals.map(goal => ({
@@ -155,16 +155,29 @@ export default function GoalsPage() {
     }));
   }, [goals]);
 
+  const canContribute = useMemo(() => {
+    if (!lastContributionDate) return true;
+    const now = new Date();
+    const lastDate = new Date(lastContributionDate);
+    return !(now.getFullYear() === lastDate.getFullYear() && now.getMonth() === lastDate.getMonth());
+  }, [lastContributionDate]);
+
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-4 flex-wrap">
         <h1 className="text-2xl font-bold font-headline">Your Financial Goals</h1>
-        <GoalDialog>
-            <Button>
-              <PlusCircle className="mr-2 h-4 w-4" />
-              Add New Goal
+        <div className="flex gap-2">
+            <Button onClick={contributeToGoals} disabled={!canContribute || goals.length === 0}>
+                <Wallet className="mr-2 h-4 w-4" />
+                {canContribute ? "Contribute This Month's Savings" : "Contribution Made"}
             </Button>
-        </GoalDialog>
+            <GoalDialog>
+                <Button>
+                  <PlusCircle className="mr-2 h-4 w-4" />
+                  Add New Goal
+                </Button>
+            </GoalDialog>
+        </div>
       </div>
       
       {goals.length > 0 && (
