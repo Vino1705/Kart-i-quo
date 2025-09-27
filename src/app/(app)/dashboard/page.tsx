@@ -59,7 +59,14 @@ export default function DashboardPage() {
     );
   }
 
-  const { monthlyNeeds, monthlyWants, monthlySavings, dailySpendingLimit } = profile;
+  const fixed = profile.fixedExpenses?.reduce((sum, exp) => sum + (Number(exp.amount) || 0), 0) || 0;
+  const disposableIncome = income - fixed;
+
+  const monthlyNeeds = fixed;
+  const monthlyWants = disposableIncome >= 0 ? disposableIncome * 0.6 : 0;
+  const monthlySavings = disposableIncome >= 0 ? disposableIncome * 0.4 : 0;
+  const dailySpendingLimit = monthlyWants / 30;
+  
   const dailySavings = dailySpendingLimit - todaysSpending;
 
   return (
