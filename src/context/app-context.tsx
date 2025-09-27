@@ -22,8 +22,7 @@ interface AppContextType {
   updateTransaction: (transactionId: string, updatedTransaction: Partial<Omit<Transaction, 'id' | 'date'>>) => void;
   deleteTransaction: (transactionId: string) => void;
   getTotalGoalContributions: () => number;
-  contributeToGoals: () => void;
-  lastContributionDate: string | null;
+  contributeToGoal: (goalId: string, amount: number) => void;
 }
 
 export const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -35,8 +34,6 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   const [goals, setGoals] = useState<Goal[]>([]);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [onboardingComplete, setOnboardingComplete] = useState(false);
-  const [lastContributionDate, setLastContributionDate] = useState<string | null>(null);
-
 
   useEffect(() => {
     // Attempt to load data from localStorage to persist state
@@ -44,7 +41,6 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       const storedProfile = localStorage.getItem('kwik-kash-profile');
       const storedGoals = localStorage.getItem('kwik-kash-goals');
       const storedTransactions = localStorage.getItem('kwik-kash-transactions');
-      const storedLastContribution = localStorage.getItem('kwik-kash-last-contribution-date');
 
       if (storedProfile) {
         const parsedProfile = JSON.parse(storedProfile);
@@ -58,9 +54,6 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       }
       if (storedTransactions) {
         setTransactions(JSON.parse(storedTransactions));
-      }
-      if (storedLastContribution) {
-        setLastContributionDate(storedLastContribution);
       }
     } catch (error) {
       console.error("Failed to load data from localStorage", error);
@@ -162,43 +155,18 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     return goals.reduce((sum, g) => sum + g.monthlyContribution, 0);
   }
 
-  const contributeToGoals = () => {
-    const now = new Date();
-    const lastDate = lastContributionDate ? new Date(lastContributionDate) : null;
-
-    if (lastDate && lastDate.getFullYear() === now.getFullYear() && lastDate.getMonth() === now.getMonth()) {
-      toast({
-        variant: "destructive",
-        title: "Contribution already made",
-        description: "You have already made your goal contributions for this month.",
-      });
-      return;
-    }
-
-    const totalContribution = getTotalGoalContributions();
-    if (profile && (profile.monthlySavings - totalContribution < 0) ) {
-      toast({
-        variant: "destructive",
-        title: "Not enough savings",
-        description: "Your monthly goal contributions exceed your total available savings.",
-      });
-      return;
-    }
-
-    const newGoals = goals.map(goal => ({
-      ...goal,
-      currentAmount: goal.currentAmount + goal.monthlyContribution,
-    }));
-
+  const contributeToGoal = (goalId: string, amount: number) => {
+    const newGoals = goals.map(goal => {
+      if (goal.id === goalId) {
+        return { ...goal, currentAmount: goal.currentAmount + amount };
+      }
+      return goal;
+    });
     setGoals(newGoals);
-    const todayStr = now.toISOString();
-    setLastContributionDate(todayStr);
     persistState('kwik-kash-goals', newGoals);
-    persistState('kwik-kash-last-contribution-date', todayStr);
-
     toast({
-      title: "Goals Updated!",
-      description: `You've contributed ₹${totalContribution.toFixed(2)} to your goals.`,
+      title: 'Contribution Successful!',
+      description: `You've added ₹${amount.toFixed(2)} to your goal.`,
     });
   };
 
@@ -230,8 +198,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     updateTransaction,
     deleteTransaction,
     getTotalGoalContributions,
-    contributeToGoals,
-    lastContributionDate,
+    contributeToGoal,
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

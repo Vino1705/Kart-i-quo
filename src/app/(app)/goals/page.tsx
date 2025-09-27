@@ -16,6 +16,9 @@ import { PlusCircle, Target, Pencil, Wallet } from 'lucide-react';
 import { Goal } from '@/lib/types';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip, Legend } from 'recharts';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { useToast } from '@/hooks/use-toast';
+
 
 const goalSchema = z.object({
   name: z.string().min(2, 'Goal name is required'),
@@ -144,8 +147,61 @@ function GoalDialog({ goal, children }: { goal?: Goal, children: React.ReactNode
   );
 }
 
+function ContributeDialog({ goal, children }: { goal: Goal, children: React.ReactNode }) {
+    const { contributeToGoal, profile } = useApp();
+    const [amount, setAmount] = useState(goal.monthlyContribution);
+    const [open, setOpen] = useState(false);
+    const { toast } = useToast();
+
+    const emergencyFund = (profile?.monthlySavings || 0) - (profile?.fixedExpenses.reduce((acc, exp) => acc + (exp.amount || 0), 0) || 0);
+
+    const handleContribute = () => {
+        if (amount <= 0) {
+             toast({ variant: 'destructive', title: "Invalid Amount", description: "Contribution must be positive." });
+            return;
+        }
+        
+        contributeToGoal(goal.id, amount);
+        setOpen(false);
+    }
+    
+    return (
+        <Dialog open={open} onOpenChange={setOpen}>
+            <DialogTrigger asChild>{children}</DialogTrigger>
+            <DialogContent>
+                <DialogHeader>
+                    <DialogTitle>Contribute to '{goal.name}'</DialogTitle>
+                    <DialogDescription>
+                        How much would you like to contribute to this goal? Your available emergency fund after this is shown for reference.
+                    </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4 py-4">
+                    <div className="space-y-2">
+                        <FormLabel>Contribution Amount (₹)</FormLabel>
+                        <Input 
+                            type="number" 
+                            value={amount} 
+                            onChange={(e) => setAmount(Number(e.target.value))}
+                        />
+                    </div>
+                     <Alert variant="default">
+                        <Wallet className="h-4 w-4" />
+                        <AlertDescription>
+                            Your remaining savings after this contribution would be approximately ₹{(emergencyFund - amount).toFixed(2)}.
+                        </AlertDescription>
+                    </Alert>
+                </div>
+                <DialogFooter>
+                    <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
+                    <Button onClick={handleContribute}>Contribute ₹{amount}</Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
+    )
+}
+
 export default function GoalsPage() {
-  const { goals, contributeToGoals, lastContributionDate } = useApp();
+  const { goals } = useApp();
   
   const chartData = useMemo(() => {
     return goals.map(goal => ({
@@ -155,22 +211,11 @@ export default function GoalsPage() {
     }));
   }, [goals]);
 
-  const canContribute = useMemo(() => {
-    if (!lastContributionDate) return true;
-    const now = new Date();
-    const lastDate = new Date(lastContributionDate);
-    return !(now.getFullYear() === lastDate.getFullYear() && now.getMonth() === lastDate.getMonth());
-  }, [lastContributionDate]);
-
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between gap-4 flex-wrap">
         <h1 className="text-2xl font-bold font-headline">Your Financial Goals</h1>
         <div className="flex gap-2">
-            <Button onClick={contributeToGoals} disabled={!canContribute || goals.length === 0}>
-                <Wallet className="mr-2 h-4 w-4" />
-                {canContribute ? "Contribute This Month's Savings" : "Contribution Made"}
-            </Button>
             <GoalDialog>
                 <Button>
                   <PlusCircle className="mr-2 h-4 w-4" />
@@ -235,17 +280,22 @@ export default function GoalsPage() {
                     ₹{goal.currentAmount.toFixed(2)} saved of ₹{goal.targetAmount.toFixed(2)}
                   </CardDescription>
                 </CardHeader>
-                <CardContent className="flex-grow">
+                <CardContent className="flex-grow space-y-4">
                   <Progress value={progress} className="w-full" />
-                  <div className="mt-2 text-sm text-muted-foreground">{progress.toFixed(1)}% complete</div>
-                </CardContent>
-                <CardFooter>
+                  <div className="text-sm text-muted-foreground">{progress.toFixed(1)}% complete</div>
                   <p className="text-xs text-muted-foreground">
                     {remainingMonths > 0
                       ? `~${remainingMonths} months remaining at ₹${goal.monthlyContribution.toFixed(2)}/month.`
                       : "Congratulations! You've reached this goal."
                     }
                   </p>
+                </CardContent>
+                <CardFooter>
+                    <ContributeDialog goal={goal}>
+                        <Button className="w-full">
+                            <Wallet className="mr-2 h-4 w-4" /> Contribute
+                        </Button>
+                    </ContributeDialog>
                 </CardFooter>
               </Card>
             );
