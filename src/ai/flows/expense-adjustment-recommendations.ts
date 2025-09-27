@@ -1,3 +1,4 @@
+
 'use server';
 /**
  * @fileOverview AI-powered expense adjustment recommendations flow.
@@ -96,7 +97,10 @@ const expenseAdjustmentRecommendationsFlow = ai.defineFlow(
   async input => {
     try {
       const {output} = await prompt(input);
-      return output!;
+      if (!output) {
+        throw new Error('AI model returned no output.');
+      }
+      return output;
     } catch (error) {
       console.error('Error in expenseAdjustmentRecommendationsFlow:', error);
       return {
