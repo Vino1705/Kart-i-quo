@@ -205,7 +205,7 @@ function ContributeDialog({ goal, children }: { goal: Goal, children: React.Reac
 }
 
 export default function GoalsPage() {
-  const { goals, contributeToGoals, canContribute } = useApp();
+  const { goals } = useApp();
   
   const chartData = useMemo(() => {
     return goals.map(goal => ({
@@ -220,10 +220,6 @@ export default function GoalsPage() {
       <div className="flex items-center justify-between gap-4 flex-wrap">
         <h1 className="text-2xl font-bold font-headline">Your Financial Goals</h1>
         <div className="flex gap-2">
-            <Button onClick={contributeToGoals} disabled={!canContribute}>
-                <Wallet className="mr-2 h-4 w-4" />
-                {canContribute ? "Contribute This Month's Savings" : "Contribution Done"}
-            </Button>
             <GoalDialog>
                 <Button>
                   <PlusCircle className="mr-2 h-4 w-4" />
