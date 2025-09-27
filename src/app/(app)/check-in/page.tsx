@@ -39,7 +39,9 @@ export default function CheckInPage() {
   const remaining = dailyLimit - todaysSpending;
 
   const today = new Date().toISOString().split('T')[0];
-  const todaysTransactions = transactions.filter(t => t.date.startsWith(today));
+  const todaysTransactions = transactions
+    .filter(t => t.date.startsWith(today))
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
   function onSubmit(data: ExpenseValues) {
     addTransaction(data);
@@ -138,6 +140,7 @@ export default function CheckInPage() {
               <Table>
                 <TableHeader>
                   <TableRow>
+                    <TableHead>Time</TableHead>
                     <TableHead>Description</TableHead>
                     <TableHead>Category</TableHead>
                     <TableHead className="text-right">Amount</TableHead>
@@ -146,6 +149,13 @@ export default function CheckInPage() {
                 <TableBody>
                   {todaysTransactions.map((t) => (
                     <TableRow key={t.id}>
+                       <TableCell className="text-xs text-muted-foreground">
+                        {new Date(t.date).toLocaleTimeString('en-IN', {
+                          hour: '2-digit',
+                          minute: '2-digit',
+                          hour12: true,
+                        })}
+                      </TableCell>
                       <TableCell className="font-medium">{t.description}</TableCell>
                       <TableCell>{t.category}</TableCell>
                       <TableCell className="text-right">₹{t.amount.toFixed(2)}</TableCell>
