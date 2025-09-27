@@ -14,12 +14,14 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Progress } from '@/components/ui/progress';
 import { PlusCircle, Target, Pencil } from 'lucide-react';
 import { Goal } from '@/lib/types';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip, Legend } from 'recharts';
 
 const goalSchema = z.object({
   name: z.string().min(2, 'Goal name is required'),
   targetAmount: z.coerce.number().min(1, 'Target amount must be positive'),
   monthlyContribution: z.coerce.number().min(1, 'Contribution must be positive'),
+  timelineMonths: z.coerce.number().optional(),
 });
 
 type GoalValues = z.infer<typeof goalSchema>;
@@ -144,6 +146,14 @@ function GoalDialog({ goal, children }: { goal?: Goal, children: React.ReactNode
 
 export default function GoalsPage() {
   const { goals } = useApp();
+  
+  const chartData = useMemo(() => {
+    return goals.map(goal => ({
+      name: goal.name,
+      Saved: goal.currentAmount,
+      Target: goal.targetAmount,
+    }));
+  }, [goals]);
 
   return (
     <div className="space-y-6">
@@ -156,6 +166,34 @@ export default function GoalsPage() {
             </Button>
         </GoalDialog>
       </div>
+      
+      {goals.length > 0 && (
+          <Card>
+              <CardHeader>
+                  <CardTitle>Goals Progress</CardTitle>
+                  <CardDescription>A visual summary of your progress towards each goal.</CardDescription>
+              </CardHeader>
+              <CardContent>
+                  <ResponsiveContainer width="100%" height={300}>
+                      <BarChart data={chartData} margin={{ top: 5, right: 20, left: 20, bottom: 5 }}>
+                          <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" fontSize={12} tickLine={false} axisLine={false} />
+                          <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `₹${value}`} />
+                          <Tooltip
+                              contentStyle={{
+                                  backgroundColor: 'hsl(var(--background))',
+                                  borderColor: 'hsl(var(--border))',
+                              }}
+                              formatter={(value: number) => `₹${value.toFixed(2)}`}
+                          />
+                          <Legend />
+                          <Bar dataKey="Saved" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+                          <Bar dataKey="Target" fill="hsl(var(--secondary))" radius={[4, 4, 0, 0]} />
+                      </BarChart>
+                  </ResponsiveContainer>
+              </CardContent>
+          </Card>
+      )}
+
 
       {goals.length > 0 ? (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
