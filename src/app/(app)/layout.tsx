@@ -42,16 +42,18 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
         router.replace('/login');
       } else {
         const isOnboardingPage = pathname === '/onboarding';
-        if (!onboardingComplete && !isOnboardingPage) {
-          router.replace('/onboarding');
-        } else if (onboardingComplete && isOnboardingPage) {
-          router.replace('/dashboard');
+        if (profile) {
+            if (!profile.role && !isOnboardingPage) {
+              router.replace('/onboarding');
+            } else if (profile.role && isOnboardingPage) {
+              router.replace('/dashboard');
+            }
         }
       }
     });
 
     return () => unsubscribe();
-  }, [onboardingComplete, pathname, router, auth]);
+  }, [profile, pathname, router, auth]);
 
   if (!profile) return (
      <div className="flex h-screen items-center justify-center">
