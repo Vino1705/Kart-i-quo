@@ -4,7 +4,7 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
-import { IndianRupee, Target, TrendingUp, TrendingDown, PiggyBank, Wallet, ShoppingCart } from 'lucide-react';
+import { IndianRupee, Target, TrendingUp, TrendingDown, PiggyBank, Wallet, ShoppingCart, ShieldCheck } from 'lucide-react';
 import Link from 'next/link';
 import { useApp } from '@/hooks/use-app';
 import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip } from 'recharts';
@@ -30,7 +30,7 @@ function StatCard({ title, value, icon, change, changeType }: { title: string, v
 }
 
 export default function DashboardPage() {
-  const { profile, goals, transactions, getTodaysSpending } = useApp();
+  const { profile, goals, transactions, getTodaysSpending, getTotalGoalContributions } = useApp();
 
   const totalGoalTarget = goals.reduce((sum, g) => sum + g.targetAmount, 0);
   const totalGoalSaved = goals.reduce((sum, g) => sum + g.currentAmount, 0);
@@ -59,13 +59,37 @@ export default function DashboardPage() {
     );
   }
 
-  const fixed = profile.fixedExpenses?.reduce((sum, exp) => sum + (Number(exp.amount) || 0), 0) || 0;
-  const disposableIncome = income - fixed;
+  const {
+    monthlyNeeds,
+    monthlyWants,
+    monthlySavings,
+    dailySpendingLimit,
+    goalContributions,
+    emergencyFund,
+  } = React.useMemo(() => {
+    const income = profile?.income || 0;
+    const fixed = profile?.fixedExpenses?.reduce((sum, exp) => sum + (Number(exp.amount) || 0), 0) || 0;
 
-  const monthlyNeeds = fixed;
-  const monthlyWants = disposableIncome >= 0 ? disposableIncome * 0.6 : 0;
-  const monthlySavings = disposableIncome >= 0 ? disposableIncome * 0.4 : 0;
-  const dailySpendingLimit = monthlyWants / 30;
+    const needs = fixed;
+    const disposableIncome = income - needs;
+    
+    const wants = disposableIncome >= 0 ? disposableIncome * 0.6 : 0;
+    const savings = disposableIncome >= 0 ? disposableIncome * 0.4 : 0;
+    
+    const dailyLimit = wants > 0 ? wants / 30 : 0;
+
+    const totalGoalContributions = getTotalGoalContributions();
+    const emergency = Math.max(0, savings - totalGoalContributions);
+
+    return {
+      monthlyNeeds: needs,
+      monthlyWants: wants,
+      monthlySavings: savings,
+      dailySpendingLimit: dailyLimit,
+      goalContributions: totalGoalContributions,
+      emergencyFund: emergency,
+    };
+  }, [profile, getTotalGoalContributions]);
   
   const dailySavings = dailySpendingLimit - todaysSpending;
 
@@ -101,27 +125,40 @@ export default function DashboardPage() {
        <Card>
         <CardHeader>
           <CardTitle>Financial Breakdown</CardTitle>
-          <CardDescription>After fixed costs, your disposable income is split between Wants and Savings.</CardDescription>
+          <CardDescription>Your monthly budget is allocated across Needs, Wants, and Savings.</CardDescription>
         </CardHeader>
         <CardContent className="grid gap-4 md:grid-cols-3">
           <StatCard
-            title="Needs"
+            title="Needs (Fixed)"
             value={`₹${monthlyNeeds.toFixed(2)}`}
             icon={<Wallet className="h-5 w-5 text-primary" />}
             change={`Covers fixed expenses`}
           />
           <StatCard
-            title="Wants"
+            title="Wants (Spending)"
             value={`₹${monthlyWants.toFixed(2)}`}
             icon={<ShoppingCart className="h-5 w-5 text-accent" />}
             change={`≈ ₹${dailySpendingLimit.toFixed(2)} / day`}
           />
-          <StatCard
-            title="Savings"
-            value={`₹${monthlySavings.toFixed(2)}`}
-            icon={<PiggyBank className="h-5 w-5 text-green-500" />}
-            change="For goals & emergencies"
-          />
+          <Card>
+             <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium">Savings</CardTitle>
+             </CardHeader>
+             <CardContent className="space-y-2">
+                <div className="flex justify-between items-center text-sm">
+                    <span className="flex items-center gap-2 text-muted-foreground"><Target className="h-4 w-4" /> Goal Contributions</span>
+                    <span className="font-semibold">₹{goalContributions.toFixed(2)}</span>
+                </div>
+                 <div className="flex justify-between items-center text-sm">
+                    <span className="flex items-center gap-2 text-muted-foreground"><ShieldCheck className="h-4 w-4" /> Emergency Fund</span>
+                    <span className="font-semibold">₹{emergencyFund.toFixed(2)}</span>
+                </div>
+                 <div className="flex justify-between items-center text-base font-bold pt-2 border-t">
+                    <span>Total Savings</span>
+                    <span>₹{monthlySavings.toFixed(2)}</span>
+                </div>
+             </CardContent>
+          </Card>
         </CardContent>
       </Card>
 

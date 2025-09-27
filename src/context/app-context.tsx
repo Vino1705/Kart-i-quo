@@ -16,11 +16,12 @@ interface AppContextType {
   updateProfile: (profile: Partial<UserProfile>) => void;
   addGoal: (goal: Omit<Goal, 'id' | 'currentAmount'>) => void;
   addTransaction: (transaction: Omit<Transaction, 'id' | 'date'>) => void;
-  updateGoal: (goalId: string, amount: number) => void;
+  updateGoal: (goalId: string, updatedGoal: Partial<Omit<Goal, 'id'>>) => void;
   getTodaysSpending: () => number;
   logout: () => void;
   updateTransaction: (transactionId: string, updatedTransaction: Partial<Omit<Transaction, 'id' | 'date'>>) => void;
   deleteTransaction: (transactionId: string) => void;
+  getTotalGoalContributions: () => number;
 }
 
 export const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -108,12 +109,16 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const updateGoal = (goalId: string, amount: number) => {
+  const updateGoal = (goalId: string, updatedData: Partial<Omit<Goal, 'id'>>) => {
     const newGoals = goals.map(g => 
-        g.id === goalId ? { ...g, currentAmount: g.currentAmount + amount } : g
+        g.id === goalId ? { ...g, ...updatedData } : g
     );
     setGoals(newGoals);
     persistState('kwik-kash-goals', newGoals);
+    toast({
+        title: 'Goal Updated',
+        description: 'Your goal has been successfully updated.',
+    });
   };
   
   const updateTransaction = (transactionId: string, updatedData: Partial<Omit<Transaction, 'id' | 'date'>>) => {
@@ -145,6 +150,10 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       .reduce((sum, t) => sum + t.amount, 0);
   };
 
+  const getTotalGoalContributions = () => {
+    return goals.reduce((sum, g) => sum + g.monthlyContribution, 0);
+  }
+
   const logout = async () => {
     const auth = getAuth(firebaseApp);
     await signOut(auth);
@@ -171,9 +180,8 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     logout,
     updateTransaction,
     deleteTransaction,
+    getTotalGoalContributions,
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 };
-
-    

@@ -19,11 +19,11 @@ export interface FixedExpense {
 }
 
 export interface Goal {
-  id: string;
+  id:string;
   name: string;
   targetAmount: number;
   currentAmount: number;
-  timelineMonths: number;
+  monthlyContribution: number;
 }
 
 export interface Transaction {
