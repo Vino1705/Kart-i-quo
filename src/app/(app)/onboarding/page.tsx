@@ -197,7 +197,7 @@ export default function OnboardingPage() {
               <Card className="bg-secondary/50">
                   <CardHeader>
                     <CardTitle className="text-lg">Your Financial Breakdown</CardTitle>
-                    <CardDescription>We split your income into Needs, Wants, and Savings.</CardDescription>
+                    <CardDescription>Based on your disposable income (Income - Needs), we suggest a 60% (Wants) and 40% (Savings) split.</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-2">
                     <SummaryCard title="Needs" amount={monthlyNeeds} icon={<Wallet className="h-5 w-5 text-primary" />} description="Your total fixed costs." />

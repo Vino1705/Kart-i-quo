@@ -28,6 +28,23 @@ interface AppContextType {
 
 export const AppContext = createContext<AppContextType | undefined>(undefined);
 
+const calculateBudget = (income: number, fixedExpenses: { amount: number }[]): Pick<UserProfile, 'monthlyNeeds' | 'monthlyWants' | 'monthlySavings' | 'dailySpendingLimit'> => {
+    const needs = fixedExpenses.reduce((sum, exp) => sum + (exp.amount || 0), 0);
+    const disposableIncome = income - needs;
+    
+    const wants = disposableIncome * 0.6;
+    const savings = disposableIncome * 0.4;
+    const daily = wants > 0 ? wants / 30 : 0;
+
+    return {
+        monthlyNeeds: needs,
+        monthlyWants: wants,
+        monthlySavings: savings,
+        dailySpendingLimit: daily,
+    };
+};
+
+
 export const AppProvider = ({ children }: { children: ReactNode }) => {
   const { toast } = useToast();
   const router = useRouter();
@@ -44,8 +61,15 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       const storedTransactions = localStorage.getItem('kwik-kash-transactions');
 
       if (storedProfile) {
-        const parsedProfile = JSON.parse(storedProfile);
-        setProfile(parsedProfile);
+        const parsedProfile: UserProfile = JSON.parse(storedProfile);
+        
+        // Always recalculate budget to ensure consistency with current logic
+        const budget = calculateBudget(parsedProfile.income, parsedProfile.fixedExpenses);
+        const updatedProfile = { ...parsedProfile, ...budget };
+
+        setProfile(updatedProfile);
+        persistState('kwik-kash-profile', updatedProfile); // Persist corrected profile
+
         if (parsedProfile && parsedProfile.role) {
             setOnboardingComplete(true);
         }
@@ -102,21 +126,13 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         startDate: exp.timelineMonths && !exp.startDate ? formatISO(new Date()) : exp.startDate
     })) ?? profile?.fixedExpenses ?? [];
     
-    const needs = fixedExpenses.reduce((sum, exp) => sum + (exp.amount || 0), 0);
-    const disposableIncome = income - needs;
-    
-    const wants = disposableIncome * 0.6;
-    const savings = disposableIncome * 0.4;
-    const daily = wants > 0 ? wants / 30 : 0;
+    const budget = calculateBudget(income, fixedExpenses);
 
     const updatedProfile: UserProfile = { 
         ...profile, 
         ...newProfileData,
         fixedExpenses,
-        monthlyNeeds: needs,
-        monthlyWants: wants,
-        monthlySavings: savings,
-        dailySpendingLimit: daily,
+        ...budget,
     } as UserProfile;
     
     setProfile(updatedProfile);
