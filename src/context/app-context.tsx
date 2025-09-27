@@ -67,8 +67,11 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         const budget = calculateBudget(parsedProfile.income, parsedProfile.fixedExpenses);
         const updatedProfile = { ...parsedProfile, ...budget };
 
+        if (JSON.stringify(parsedProfile) !== JSON.stringify(updatedProfile)) {
+          persistState('kwik-kash-profile', updatedProfile); // Persist corrected profile
+        }
         setProfile(updatedProfile);
-        persistState('kwik-kash-profile', updatedProfile); // Persist corrected profile
+
 
         if (parsedProfile && parsedProfile.role) {
             setOnboardingComplete(true);
@@ -239,15 +242,22 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
 
   const logout = async () => {
     const auth = getAuth(firebaseApp);
-    await signOut(auth);
-    setProfile(null);
-    setGoals([]);
-    setTransactions([]);
-    setOnboardingComplete(false);
-    localStorage.removeItem('kwik-kash-profile');
-    localStorage.removeItem('kwik-kash-goals');
-    localStorage.removeItem('kwik-kash-transactions');
-    router.push('/login');
+    try {
+      await signOut(auth);
+      // Clear sensitive session state, but keep persisted data in localStorage
+      setProfile(null);
+      setGoals([]);
+      setTransactions([]);
+      setOnboardingComplete(false);
+      router.push('/login');
+    } catch (error) {
+       console.error("Logout failed", error);
+       toast({
+        variant: "destructive",
+        title: "Logout Failed",
+        description: "An error occurred while logging out. Please try again.",
+       })
+    }
   }
 
   const value = {
@@ -268,4 +278,5 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
-};
+
+    
