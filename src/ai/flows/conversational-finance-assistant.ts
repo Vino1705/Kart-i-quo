@@ -87,7 +87,10 @@ const conversationalFinanceAssistantFlow = ai.defineFlow(
   async input => {
     try {
       const {output} = await prompt(input);
-      return output!;
+      if (!output) {
+        throw new Error('AI model returned no output.');
+      }
+      return output;
     } catch (error) {
       console.error('Error in conversationalFinanceAssistantFlow:', error);
       return {
