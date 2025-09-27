@@ -14,6 +14,8 @@ export interface FixedExpense {
   id: string;
   name: string;
   amount: number;
+  timelineMonths?: number;
+  startDate?: string;
 }
 
 export interface Goal {

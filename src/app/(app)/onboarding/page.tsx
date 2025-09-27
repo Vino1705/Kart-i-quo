@@ -14,10 +14,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Trash, Wallet, PiggyBank, ShoppingCart } from 'lucide-react';
 import React from 'react';
+import { addMonths, formatISO } from 'date-fns';
 
 const fixedExpenseSchema = z.object({
   name: z.string().min(1, 'Expense name is required'),
   amount: z.coerce.number().min(0, 'Amount must be positive'),
+  timelineMonths: z.coerce.number().optional(),
 });
 
 const onboardingSchema = z.object({
@@ -84,7 +86,11 @@ export default function OnboardingPage() {
 
     const profileData = {
       ...data,
-      fixedExpenses: data.fixedExpenses?.map(exp => ({ ...exp, id: Math.random().toString() })) || [],
+      fixedExpenses: data.fixedExpenses?.map(exp => ({ 
+        ...exp, 
+        id: Math.random().toString(),
+        startDate: exp.timelineMonths ? formatISO(new Date()) : undefined,
+      })) || [],
       dailySpendingLimit: dailyLimit,
       monthlyNeeds: needs,
       monthlyWants: wants,
@@ -174,6 +180,19 @@ export default function OnboardingPage() {
                           </FormItem>
                         )}
                       />
+                      <FormField
+                          control={form.control}
+                          name={`fixedExpenses.${index}.timelineMonths`}
+                          render={({ field }) => (
+                            <FormItem className="w-1/4">
+                              <FormLabel className="sr-only">Timeline</FormLabel>
+                              <FormControl>
+                                <Input type="number" placeholder="Months (Opt)" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
                       <Button type="button" variant="destructive" size="icon" onClick={() => remove(index)}>
                         <Trash className="h-4 w-4" />
                       </Button>

@@ -12,6 +12,7 @@ import {
   History,
   LogOut,
   Settings,
+  CreditCard,
 } from 'lucide-react';
 import { onAuthStateChanged, getAuth } from 'firebase/auth';
 import firebaseApp from '@/lib/firebase';
@@ -27,6 +28,7 @@ const navItems = [
   { href: '/check-in', icon: <CheckCircle />, label: 'Daily Check-in' },
   { href: '/goals', icon: <Target />, label: 'Goals' },
   { href: '/expenses', icon: <PieChart />, label: 'Expenses' },
+  { href: '/fixed-expenses', icon: <CreditCard />, label: 'Fixed Expenses' },
   { href: '/transactions', icon: <History />, label: 'Transactions' },
 ];
 
@@ -44,12 +46,12 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
             router.replace('/login');
         }
       } else {
-        if (profile) {
-            if (!profile.role && !isOnboardingPage) {
-              router.replace('/onboarding');
-            } else if (profile.role && isOnboardingPage) {
-              router.replace('/dashboard');
-            }
+        if (profile === null && !isOnboardingPage) {
+           router.replace('/onboarding');
+        } else if (profile && !profile.role && !isOnboardingPage) {
+           router.replace('/onboarding');
+        } else if (profile && profile.role && isOnboardingPage) {
+          router.replace('/dashboard');
         }
       }
     });
@@ -57,13 +59,15 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
     return () => unsubscribe();
   }, [profile, pathname, router, auth]);
 
-  if (!profile && pathname !== '/onboarding') return (
-     <div className="flex h-screen items-center justify-center">
-        <p>Loading your profile...</p>
-     </div>
-  );
-
-  if (pathname === '/onboarding') {
+  if (profile === undefined) {
+     return (
+        <div className="flex h-screen items-center justify-center">
+            <p>Loading your profile...</p>
+        </div>
+     );
+  }
+  
+  if (pathname === '/onboarding' || profile === null) {
     return <>{children}</>;
   }
 

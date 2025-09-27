@@ -14,11 +14,15 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Trash } from 'lucide-react';
 import React from 'react';
 import { useToast } from '@/hooks/use-toast';
+import { formatISO } from 'date-fns';
+
 
 const fixedExpenseSchema = z.object({
   id: z.string().optional(),
   name: z.string().min(1, 'Expense name is required'),
   amount: z.coerce.number().min(0, 'Amount must be positive'),
+  timelineMonths: z.coerce.number().optional(),
+  startDate: z.string().optional(),
 });
 
 const profileSchema = z.object({
@@ -67,8 +71,13 @@ export default function SettingsPage() {
     const dailyLimit = wants / 30;
 
     const profileData = {
+      ...profile,
       ...data,
-      fixedExpenses: data.fixedExpenses?.map(exp => ({ ...exp, id: exp.id || Math.random().toString() })) || [],
+      fixedExpenses: data.fixedExpenses?.map(exp => ({ 
+          ...exp, 
+          id: exp.id || Math.random().toString(),
+          startDate: exp.timelineMonths && !exp.startDate ? formatISO(new Date()) : exp.startDate
+      })) || [],
       dailySpendingLimit: dailyLimit,
       monthlyNeeds: needs,
       monthlyWants: wants,
@@ -127,55 +136,6 @@ export default function SettingsPage() {
                   </FormItem>
                 )}
               />
-            </div>
-
-            <div>
-              <FormLabel className="text-lg font-medium">Fixed Monthly Expenses</FormLabel>
-              <p className="text-sm text-muted-foreground mb-4">Enter expenses like rent, EMIs, or subscriptions.</p>
-              <div className="space-y-4">
-                {fields.map((field, index) => (
-                  <div key={field.id} className="flex items-end gap-4">
-                    <FormField
-                      control={form.control}
-                      name={`fixedExpenses.${index}.name`}
-                      render={({ field }) => (
-                        <FormItem className="flex-1">
-                          <FormLabel className="sr-only">Expense Name</FormLabel>
-                          <FormControl>
-                            <Input placeholder="Expense Name" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name={`fixedExpenses.${index}.amount`}
-                      render={({ field }) => (
-                        <FormItem className="w-1/3">
-                          <FormLabel className="sr-only">Amount</FormLabel>
-                          <FormControl>
-                            <Input type="number" placeholder="Amount (₹)" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <Button type="button" variant="destructive" size="icon" onClick={() => remove(index)}>
-                      <Trash className="h-4 w-4" />
-                    </Button>
-                  </div>
-                ))}
-              </div>
-               <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  className="mt-4"
-                  onClick={() => append({ name: '', amount: 0 })}
-                >
-                  Add Expense
-                </Button>
             </div>
             
             <Button type="submit" className="w-full" size="lg">Save Changes</Button>

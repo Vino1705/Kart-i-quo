@@ -11,6 +11,7 @@ const pageTitles: { [key: string]: string } = {
   '/check-in': 'Daily Expense Check-in',
   '/goals': 'Financial Goals',
   '/expenses': 'Expense Analysis',
+  '/fixed-expenses': 'Fixed Expenses Analysis',
   '/transactions': 'Transaction History',
   '/onboarding': 'Welcome to Kwik Kash',
   '/settings': 'Profile Settings',
