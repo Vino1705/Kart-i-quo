@@ -68,11 +68,11 @@ export default function SettingsPage() {
     const income = data.income;
     const fixed = data.fixedExpenses?.reduce((sum, exp) => sum + (Number(exp.amount) || 0), 0) || 0;
 
-    const disposableIncome = income - fixed;
     const needs = fixed;
+    const disposableIncome = income - needs;
     const wants = disposableIncome * 0.6;
     const savings = disposableIncome * 0.4;
-    const dailyLimit = wants / 30;
+    const dailyLimit = wants > 0 ? wants / 30 : 0;
 
     const profileData = {
       ...profile,

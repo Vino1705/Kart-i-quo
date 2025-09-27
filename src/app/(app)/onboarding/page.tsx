@@ -68,11 +68,11 @@ export default function OnboardingPage() {
     const income = Number(watchedIncome) || 0;
     const fixed = watchedFixedExpenses?.reduce((sum, exp) => sum + (Number(exp.amount) || 0), 0) || 0;
 
-    const disposableIncome = income - fixed;
     const needs = fixed;
+    const disposableIncome = income - needs;
     const wants = disposableIncome * 0.6; // 60% of disposable for wants
     const savings = disposableIncome * 0.4; // 40% of disposable for savings
-    const daily = wants / 30;
+    const daily = wants > 0 ? wants / 30 : 0;
 
     return { monthlyNeeds: needs, monthlyWants: wants, monthlySavings: savings, dailyLimit: daily };
   }, [watchedIncome, watchedFixedExpenses]);
@@ -82,11 +82,11 @@ export default function OnboardingPage() {
     const income = data.income;
     const fixed = data.fixedExpenses?.reduce((sum, exp) => sum + (Number(exp.amount) || 0), 0) || 0;
     
-    const disposableIncome = income - fixed;
     const needs = fixed;
+    const disposableIncome = income - needs;
     const wants = disposableIncome * 0.6;
     const savings = disposableIncome * 0.4;
-    const dailyLimit = wants / 30;
+    const dailyLimit = wants > 0 ? wants / 30 : 0;
 
     const profileData = {
       ...data,
