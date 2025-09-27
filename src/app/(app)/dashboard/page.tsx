@@ -4,7 +4,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
-import { DollarSign, Target, TrendingUp, TrendingDown, IndianRupee } from 'lucide-react';
+import { IndianRupee, Target, TrendingUp, TrendingDown } from 'lucide-react';
 import Link from 'next/link';
 import { useApp } from '@/hooks/use-app';
 import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip } from 'recharts';
@@ -63,7 +63,7 @@ export default function DashboardPage() {
         <StatCard 
           title="Today's Spending" 
           value={`₹${todaysSpending.toFixed(2)}`}
-          icon={<DollarSign className="h-4 w-4 text-muted-foreground" />}
+          icon={<IndianRupee className="h-4 w-4 text-muted-foreground" />}
           change={dailyProfitLoss >= 0 ? `₹${dailyProfitLoss.toFixed(2)} under limit` : `₹${Math.abs(dailyProfitLoss).toFixed(2)} over limit`}
           changeType={dailyProfitLoss >= 0 ? 'increase' : 'decrease'}
         />
@@ -100,6 +100,7 @@ export default function DashboardPage() {
                     borderColor: 'hsl(var(--border))',
                   }}
                   labelStyle={{ color: 'hsl(var(--foreground))' }}
+                  formatter={(value: number) => `₹${value.toFixed(2)}`}
                 />
                 <Bar dataKey="amount" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
               </BarChart>
