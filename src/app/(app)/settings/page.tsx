@@ -66,20 +66,12 @@ export default function SettingsPage() {
 
   function onSubmit(data: ProfileValues) {
     const income = data.income;
-    const fixed = data.fixedExpenses?.reduce((sum, exp) => sum + (Number(exp.amount) || 0), 0) || 0;
 
-    const needs = fixed;
-    const disposableIncome = income - needs;
-    
-    let wants = 0;
-    let savings = 0;
-    let daily = 0;
-
-    if (disposableIncome >= 0) {
-        savings = disposableIncome * 0.4;
-        wants = disposableIncome - savings;
-        daily = wants > 0 ? wants / 30 : 0;
-    }
+    // 50/30/20 rule
+    const needs = income * 0.5;
+    const wants = income * 0.3;
+    const savings = income * 0.2;
+    const daily = wants > 0 ? wants / 30 : 0;
 
     const profileData = {
       ...profile,
@@ -107,7 +99,7 @@ export default function SettingsPage() {
     <Card className="w-full max-w-3xl mx-auto">
       <CardHeader>
         <CardTitle className="text-2xl font-headline">Profile Settings</CardTitle>
-        <CardDescription>Update your personal and financial information here.</CardDescription>
+        <CardDescription>Update your personal and financial information here. Your budget is calculated using the 50/30/20 rule.</CardDescription>
       </CardHeader>
       <CardContent>
         <Form {...form}>

@@ -95,7 +95,23 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const updateProfile = (newProfileData: Partial<UserProfile>) => {
-    const updatedProfile = { ...profile, ...newProfileData, goals: newProfileData.goals || profile?.goals } as UserProfile;
+    const income = newProfileData.income || profile?.income || 0;
+    
+    // 50/30/20 rule
+    const needs = income * 0.5;
+    const wants = income * 0.3;
+    const savings = income * 0.2;
+    const daily = wants > 0 ? wants / 30 : 0;
+
+    const updatedProfile = { 
+        ...profile, 
+        ...newProfileData,
+        monthlyNeeds: needs,
+        monthlyWants: wants,
+        monthlySavings: savings,
+        dailySpendingLimit: daily,
+    } as UserProfile;
+    
     setProfile(updatedProfile);
     if(newProfileData.goals) {
       setGoals(newProfileData.goals);

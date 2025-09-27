@@ -69,19 +69,30 @@ export default function DashboardPage() {
     goalContributions,
     emergencyFund,
   } = React.useMemo(() => {
-    const monthlyNeeds = profile?.monthlyNeeds || 0;
-    const monthlyWants = profile?.monthlyWants || 0;
-    const monthlySavings = profile?.monthlySavings || 0;
-    const dailySpendingLimit = profile?.dailySpendingLimit || 0;
+    const income = profile?.income || 0;
+    const needs = profile?.fixedExpenses.reduce((sum, exp) => sum + exp.amount, 0) || 0;
+    
+    // 50/30/20 rule
+    const calculatedNeeds = income * 0.5;
+    const calculatedWants = income * 0.3;
+    const calculatedSavings = income * 0.2;
+
+    const profileData = {
+      ...profile,
+      monthlyNeeds: calculatedNeeds,
+      monthlyWants: calculatedWants,
+      monthlySavings: calculatedSavings,
+      dailySpendingLimit: calculatedWants / 30,
+    };
 
     const totalGoalContributions = goals.reduce((sum, g) => sum + g.monthlyContribution, 0);
-    const emergency = Math.max(0, monthlySavings - totalGoalContributions);
+    const emergency = Math.max(0, profileData.monthlySavings - totalGoalContributions);
 
     return {
-      monthlyNeeds,
-      monthlyWants,
-      monthlySavings,
-      dailySpendingLimit,
+      monthlyNeeds: profileData.monthlyNeeds,
+      monthlyWants: profileData.monthlyWants,
+      monthlySavings: profileData.monthlySavings,
+      dailySpendingLimit: profileData.dailySpendingLimit,
       goalContributions: totalGoalContributions,
       emergencyFund: emergency,
     };
@@ -121,24 +132,24 @@ export default function DashboardPage() {
        <Card>
         <CardHeader>
           <CardTitle>Financial Breakdown</CardTitle>
-          <CardDescription>Your monthly budget is allocated across Needs, Wants, and Savings.</CardDescription>
+          <CardDescription>Your monthly budget is allocated across Needs, Wants, and Savings following the 50/30/20 rule.</CardDescription>
         </CardHeader>
         <CardContent className="grid gap-4 md:grid-cols-3">
           <StatCard
-            title="Needs (Fixed)"
+            title="Needs (50%)"
             value={`₹${monthlyNeeds.toFixed(2)}`}
             icon={<Wallet className="h-5 w-5 text-primary" />}
-            change={`Covers fixed expenses`}
+            change={`Target for fixed expenses`}
           />
           <StatCard
-            title="Wants (Spending)"
+            title="Wants (30%)"
             value={`₹${monthlyWants.toFixed(2)}`}
             icon={<ShoppingCart className="h-5 w-5 text-accent" />}
             change={`≈ ₹${dailySpendingLimit.toFixed(2)} / day`}
           />
           <Card>
              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium">Savings</CardTitle>
+                <CardTitle className="text-sm font-medium">Savings (20%)</CardTitle>
              </CardHeader>
              <CardContent className="space-y-2">
                 <div className="flex justify-between items-center text-sm">
