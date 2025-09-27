@@ -9,6 +9,7 @@ import { IndianRupee, Target, TrendingUp, TrendingDown, PiggyBank, Wallet, Shopp
 import Link from 'next/link';
 import { useApp } from '@/hooks/use-app';
 import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip } from 'recharts';
+import { SpendingForecast } from '@/components/spending-forecast';
 
 function StatCard({ title, value, icon, change, changeType }: { title: string, value: string, icon: React.ReactNode, change?: string, changeType?: 'increase' | 'decrease' }) {
   return (
@@ -213,6 +214,9 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
       </div>
+
+      <SpendingForecast />
+
     </div>
   );
 }
