@@ -66,8 +66,12 @@ export default function SettingsPage() {
 
   function onSubmit(data: ProfileValues) {
     const income = data.income;
-    const wants = income * 0.3;
-    const savings = income * 0.2;
+    const fixed = data.fixedExpenses?.reduce((sum, exp) => sum + (Number(exp.amount) || 0), 0) || 0;
+
+    const disposableIncome = income - fixed;
+    const needs = fixed;
+    const wants = disposableIncome * 0.6;
+    const savings = disposableIncome * 0.4;
     const dailyLimit = wants / 30;
 
     const profileData = {
@@ -79,11 +83,12 @@ export default function SettingsPage() {
           startDate: exp.timelineMonths && !exp.startDate ? formatISO(new Date()) : exp.startDate
       })) || [],
       dailySpendingLimit: dailyLimit,
-      monthlyNeeds: (profile?.monthlyNeeds || 0),
+      monthlyNeeds: needs,
       monthlyWants: wants,
       monthlySavings: savings,
     };
-    updateProfile(profileData);
+    
+    updateProfile(profileData as any);
     toast({
         title: "Profile Updated",
         description: "Your financial details have been successfully updated.",

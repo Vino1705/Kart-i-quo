@@ -36,7 +36,7 @@ function SummaryCard({ title, amount, icon, description }: { title: string; amou
             <div className="flex items-center gap-3">
                 {icon}
                 <div className="flex flex-col">
-                  <span className="text-sm font-medium text-muted-foreground">{title}</span>
+                  <span className="text-sm font-medium">{title}</span>
                   <span className="text-xs text-muted-foreground">{description}</span>
                 </div>
             </div>
@@ -64,25 +64,28 @@ export default function OnboardingPage() {
   const watchedIncome = form.watch('income');
   const watchedFixedExpenses = form.watch('fixedExpenses');
 
-  const { monthlyNeeds, monthlyWants, monthlySavings, dailyLimit, totalFixed } = React.useMemo(() => {
+  const { monthlyNeeds, monthlyWants, monthlySavings, dailyLimit } = React.useMemo(() => {
     const income = Number(watchedIncome) || 0;
     const fixed = watchedFixedExpenses?.reduce((sum, exp) => sum + (Number(exp.amount) || 0), 0) || 0;
 
+    const disposableIncome = income - fixed;
     const needs = fixed;
-    const wants = income * 0.3;
-    const savings = income * 0.2;
+    const wants = disposableIncome * 0.6; // 60% of disposable for wants
+    const savings = disposableIncome * 0.4; // 40% of disposable for savings
     const daily = wants / 30;
 
-    return { monthlyNeeds: needs, monthlyWants: wants, monthlySavings: savings, dailyLimit: daily, totalFixed: fixed };
+    return { monthlyNeeds: needs, monthlyWants: wants, monthlySavings: savings, dailyLimit: daily };
   }, [watchedIncome, watchedFixedExpenses]);
 
 
   function onSubmit(data: OnboardingValues) {
     const income = data.income;
     const fixed = data.fixedExpenses?.reduce((sum, exp) => sum + (Number(exp.amount) || 0), 0) || 0;
+    
+    const disposableIncome = income - fixed;
     const needs = fixed;
-    const wants = income * 0.3;
-    const savings = income * 0.2;
+    const wants = disposableIncome * 0.6;
+    const savings = disposableIncome * 0.4;
     const dailyLimit = wants / 30;
 
     const profileData = {
@@ -151,7 +154,7 @@ export default function OnboardingPage() {
 
               <div>
                 <Label className="text-lg font-medium">Fixed Monthly Expenses</Label>
-                <p className="text-sm text-muted-foreground mb-4">Enter expenses like rent, EMIs, or subscriptions. This should ideally be under 50% of your income.</p>
+                <p className="text-sm text-muted-foreground mb-4">Enter expenses like rent, EMIs, or subscriptions. This is your 'Needs' category.</p>
                 <div className="space-y-4">
                   {fields.map((field, index) => (
                     <div key={field.id} className="flex items-end gap-4">
@@ -214,12 +217,12 @@ export default function OnboardingPage() {
               <Card className="bg-secondary/50">
                   <CardHeader>
                     <CardTitle className="text-lg">Your Financial Breakdown</CardTitle>
-                    <CardDescription>Based on the 50/30/20 rule, here's our suggestion for your monthly budget.</CardDescription>
+                    <CardDescription>After fixed costs, your disposable income is split between Wants (60%) and Savings (40%).</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-2">
-                    <SummaryCard title="Needs (50%)" amount={monthlyNeeds} icon={<Wallet className="h-5 w-5 text-primary" />} description={`Your calculated fixed costs.`} />
-                    <SummaryCard title="Wants (30%)" amount={monthlyWants} icon={<ShoppingCart className="h-5 w-5 text-accent" />} description="For discretionary spending." />
-                    <SummaryCard title="Savings (20%)" amount={monthlySavings} icon={<PiggyBank className="h-5 w-5 text-green-500" />} description="For goals & emergencies." />
+                    <SummaryCard title="Needs" amount={monthlyNeeds} icon={<Wallet className="h-5 w-5 text-primary" />} description={`Your calculated fixed costs.`} />
+                    <SummaryCard title="Wants" amount={monthlyWants} icon={<ShoppingCart className="h-5 w-5 text-accent" />} description="For discretionary spending." />
+                    <SummaryCard title="Savings" amount={monthlySavings} icon={<PiggyBank className="h-5 w-5 text-green-500" />} description="For goals & emergencies." />
                   </CardContent>
                    <CardFooter>
                      <div className="w-full flex justify-between items-center p-3 rounded-lg bg-primary/10">

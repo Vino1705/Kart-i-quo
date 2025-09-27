@@ -94,23 +94,23 @@ export default function DashboardPage() {
        <Card>
         <CardHeader>
           <CardTitle>Financial Breakdown</CardTitle>
-          <CardDescription>Your monthly budget based on the 50/30/20 rule.</CardDescription>
+          <CardDescription>After fixed costs, your disposable income is split between Wants and Savings.</CardDescription>
         </CardHeader>
         <CardContent className="grid gap-4 md:grid-cols-3">
           <StatCard
-            title="Needs (50%)"
+            title="Needs"
             value={`₹${monthlyNeeds.toFixed(2)}`}
             icon={<Wallet className="h-5 w-5 text-primary" />}
             change={`Covers fixed expenses`}
           />
           <StatCard
-            title="Wants (30%)"
+            title="Wants"
             value={`₹${monthlyWants.toFixed(2)}`}
             icon={<ShoppingCart className="h-5 w-5 text-accent" />}
             change={`≈ ₹${dailySpendingLimit.toFixed(2)} / day`}
           />
           <StatCard
-            title="Savings (20%)"
+            title="Savings"
             value={`₹${monthlySavings.toFixed(2)}`}
             icon={<PiggyBank className="h-5 w-5 text-green-500" />}
             change="For goals & emergencies"
