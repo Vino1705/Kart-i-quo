@@ -28,12 +28,15 @@ const onboardingSchema = z.object({
 
 type OnboardingValues = z.infer<typeof onboardingSchema>;
 
-function SummaryCard({ title, amount, icon }: { title: string; amount: number; icon: React.ReactNode }) {
+function SummaryCard({ title, amount, icon, description }: { title: string; amount: number; icon: React.ReactNode; description: string; }) {
     return (
         <div className="flex items-center justify-between rounded-lg bg-muted p-3">
             <div className="flex items-center gap-3">
                 {icon}
-                <span className="text-sm font-medium text-muted-foreground">{title}</span>
+                <div className="flex flex-col">
+                  <span className="text-sm font-medium text-muted-foreground">{title}</span>
+                  <span className="text-xs text-muted-foreground">{description}</span>
+                </div>
             </div>
             <div className="text-sm font-bold">₹{amount.toFixed(2)}</div>
         </div>
@@ -46,8 +49,8 @@ export default function OnboardingPage() {
   const form = useForm<OnboardingValues>({
     resolver: zodResolver(onboardingSchema),
     defaultValues: {
-      income: 10000,
-      fixedExpenses: [{ name: 'Rent', amount: 3000 }],
+      income: 50000,
+      fixedExpenses: [{ name: 'Rent', amount: 15000 }],
     },
   });
 
@@ -59,37 +62,31 @@ export default function OnboardingPage() {
   const watchedIncome = form.watch('income');
   const watchedFixedExpenses = form.watch('fixedExpenses');
 
-  const { monthlyNeeds, monthlyWants, monthlySavings, dailyLimit } = React.useMemo(() => {
+  const { monthlyNeeds, monthlyWants, monthlySavings, dailyLimit, totalFixed } = React.useMemo(() => {
     const income = Number(watchedIncome) || 0;
-    const totalFixed = watchedFixedExpenses?.reduce((sum, exp) => sum + (Number(exp.amount) || 0), 0) || 0;
-    const disposableIncome = income - totalFixed;
+    const fixed = watchedFixedExpenses?.reduce((sum, exp) => sum + (Number(exp.amount) || 0), 0) || 0;
 
-    if (disposableIncome <= 0) {
-      return { monthlyNeeds: totalFixed, monthlyWants: 0, monthlySavings: 0, dailyLimit: 0 };
-    }
-
-    const needs = totalFixed;
-    const wants = disposableIncome * 0.3;
-    const savings = disposableIncome * 0.2;
+    const needs = income * 0.5;
+    const wants = income * 0.3;
+    const savings = income * 0.2;
     const daily = wants / 30;
 
-    return { monthlyNeeds: needs, monthlyWants: wants, monthlySavings: savings, dailyLimit: daily };
+    return { monthlyNeeds: needs, monthlyWants: wants, monthlySavings: savings, dailyLimit: daily, totalFixed: fixed };
   }, [watchedIncome, watchedFixedExpenses]);
 
 
   function onSubmit(data: OnboardingValues) {
-    const totalFixed = data.fixedExpenses?.reduce((sum, exp) => sum + exp.amount, 0) || 0;
-    const disposableIncome = data.income - totalFixed;
-    
-    const wants = disposableIncome > 0 ? disposableIncome * 0.3 : 0;
-    const savings = disposableIncome > 0 ? disposableIncome * 0.2 : 0;
-    const calculatedDailyLimit = wants / 30;
+    const income = data.income;
+    const needs = income * 0.5;
+    const wants = income * 0.3;
+    const savings = income * 0.2;
+    const dailyLimit = wants / 30;
 
     const profileData = {
       ...data,
       fixedExpenses: data.fixedExpenses?.map(exp => ({ ...exp, id: Math.random().toString() })) || [],
-      dailySpendingLimit: calculatedDailyLimit,
-      monthlyNeeds: totalFixed,
+      dailySpendingLimit: dailyLimit,
+      monthlyNeeds: needs,
       monthlyWants: wants,
       monthlySavings: savings,
     };
@@ -147,7 +144,7 @@ export default function OnboardingPage() {
 
               <div>
                 <Label className="text-lg font-medium">Fixed Monthly Expenses</Label>
-                <p className="text-sm text-muted-foreground mb-4">Enter expenses like rent, EMIs, or subscriptions.</p>
+                <p className="text-sm text-muted-foreground mb-4">Enter expenses like rent, EMIs, or subscriptions. This should ideally be under 50% of your income.</p>
                 <div className="space-y-4">
                   {fields.map((field, index) => (
                     <div key={field.id} className="flex items-end gap-4">
@@ -197,12 +194,12 @@ export default function OnboardingPage() {
               <Card className="bg-secondary/50">
                   <CardHeader>
                     <CardTitle className="text-lg">Your Financial Breakdown</CardTitle>
-                    <CardDescription>Based on the 50/30/20 rule, here's our suggestion.</CardDescription>
+                    <CardDescription>Based on the 50/30/20 rule, here's our suggestion for your monthly budget.</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-2">
-                    <SummaryCard title="Needs (Fixed Expenses)" amount={monthlyNeeds} icon={<Wallet className="h-5 w-5 text-primary" />} />
-                    <SummaryCard title="Wants (Discretionary)" amount={monthlyWants} icon={<ShoppingCart className="h-5 w-5 text-accent" />} />
-                    <SummaryCard title="Savings" amount={monthlySavings} icon={<PiggyBank className="h-5 w-5 text-green-500" />} />
+                    <SummaryCard title="Needs (50%)" amount={monthlyNeeds} icon={<Wallet className="h-5 w-5 text-primary" />} description={`Target for fixed costs. Yours: ₹${totalFixed.toFixed(2)}`} />
+                    <SummaryCard title="Wants (30%)" amount={monthlyWants} icon={<ShoppingCart className="h-5 w-5 text-accent" />} description="For discretionary spending." />
+                    <SummaryCard title="Savings (20%)" amount={monthlySavings} icon={<PiggyBank className="h-5 w-5 text-green-500" />} description="For goals & emergencies." />
                   </CardContent>
                    <CardFooter>
                      <div className="w-full flex justify-between items-center p-3 rounded-lg bg-primary/10">

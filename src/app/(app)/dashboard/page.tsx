@@ -4,11 +4,10 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
-import { IndianRupee, Target, TrendingUp, TrendingDown } from 'lucide-react';
+import { IndianRupee, Target, TrendingUp, TrendingDown, PiggyBank, Wallet, ShoppingCart } from 'lucide-react';
 import Link from 'next/link';
 import { useApp } from '@/hooks/use-app';
 import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip } from 'recharts';
-import { SavingsIcon } from '@/components/logo';
 
 function StatCard({ title, value, icon, change, changeType }: { title: string, value: string, icon: React.ReactNode, change?: string, changeType?: 'increase' | 'decrease' }) {
   return (
@@ -37,12 +36,10 @@ export default function DashboardPage() {
   const totalGoalSaved = goals.reduce((sum, g) => sum + g.currentAmount, 0);
   
   const todaysSpending = getTodaysSpending();
-  const dailyLimit = profile?.dailySpendingLimit || 0;
-  const dailySavings = dailyLimit - todaysSpending;
-
+  
   const overallSpending = transactions.reduce((sum, t) => sum + t.amount, 0);
   const income = profile?.income || 0;
-  const spendingVsIncome = income > 0 ? ((overallSpending / income) * 100).toFixed(0) + '% of income' : '';
+  const spendingVsIncome = income > 0 ? `${((overallSpending / income) * 100).toFixed(0)}% of income` : '';
 
   const recentTransactions = transactions.slice(0, 7).reverse();
   const chartData = recentTransactions.map(t => ({
@@ -62,34 +59,65 @@ export default function DashboardPage() {
     );
   }
 
+  const { monthlyNeeds, monthlyWants, monthlySavings, dailySpendingLimit } = profile;
+  const dailySavings = dailySpendingLimit - todaysSpending;
+
   return (
     <div className="space-y-6">
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <StatCard 
+          title="Monthly Income" 
+          value={`₹${income.toFixed(2)}`}
+          icon={<IndianRupee className="h-4 w-4 text-muted-foreground" />}
+        />
+        <StatCard 
           title="Overall Spending" 
           value={`₹${overallSpending.toFixed(2)}`}
-          icon={<IndianRupee className="h-4 w-4 text-muted-foreground" />}
+          icon={<ShoppingCart className="h-4 w-4 text-muted-foreground" />}
           change={spendingVsIncome}
           changeType={income > overallSpending ? 'increase' : 'decrease'}
         />
         <StatCard
           title="Daily Savings"
           value={`₹${(dailySavings > 0 ? dailySavings : 0).toFixed(2)}`}
-          icon={<SavingsIcon className="h-4 w-4 text-muted-foreground" />}
-          change={dailySavings >= 0 ? "On track today" : "Over budget today"}
+          icon={<PiggyBank className="h-4 w-4 text-muted-foreground" />}
+          change={dailySavings >= 0 ? "On track today" : "Over budget"}
           changeType={dailySavings >= 0 ? "increase" : "decrease"}
         />
         <StatCard 
-          title="Total Savings for Goals" 
+          title="Total Goal Savings" 
           value={`₹${totalGoalSaved.toFixed(2)}`}
           icon={<Target className="h-4 w-4 text-muted-foreground" />}
         />
-        <StatCard 
-          title="Monthly Income" 
-          value={`₹${profile?.income.toFixed(2)}`}
-          icon={<IndianRupee className="h-4 w-4 text-muted-foreground" />}
-        />
       </div>
+
+       <Card>
+        <CardHeader>
+          <CardTitle>Financial Breakdown</CardTitle>
+          <CardDescription>Your monthly budget based on the 50/30/20 rule.</CardDescription>
+        </CardHeader>
+        <CardContent className="grid gap-4 md:grid-cols-3">
+          <StatCard
+            title="Needs (50%)"
+            value={`₹${monthlyNeeds.toFixed(2)}`}
+            icon={<Wallet className="h-5 w-5 text-primary" />}
+            change={`Covers fixed expenses`}
+          />
+          <StatCard
+            title="Wants (30%)"
+            value={`₹${monthlyWants.toFixed(2)}`}
+            icon={<ShoppingCart className="h-5 w-5 text-accent" />}
+            change={`≈ ₹${dailySpendingLimit.toFixed(2)} / day`}
+          />
+          <StatCard
+            title="Savings (20%)"
+            value={`₹${monthlySavings.toFixed(2)}`}
+            icon={<PiggyBank className="h-5 w-5 text-green-500" />}
+            change="For goals & emergencies"
+          />
+        </CardContent>
+      </Card>
+
 
       <div className="grid gap-6 md:grid-cols-2">
         <Card>
