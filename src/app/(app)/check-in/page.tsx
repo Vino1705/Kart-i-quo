@@ -14,10 +14,11 @@ import { expenseCategories, Transaction } from '@/lib/types';
 import { Progress } from '@/components/ui/progress';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { useState } from 'react';
-import { Pencil, Trash2 } from 'lucide-react';
+import { useMemo, useState } from 'react';
+import { Pencil, PieChart, Trash2 } from 'lucide-react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { EndOfDaySummary } from '@/components/end-of-day-summary';
+import { Cell, Legend, Pie, PieChart as RechartsPieChart, ResponsiveContainer, Tooltip } from 'recharts';
 
 const expenseSchema = z.object({
   id: z.string().optional(),
@@ -27,6 +28,14 @@ const expenseSchema = z.object({
 });
 
 type ExpenseValues = z.infer<typeof expenseSchema>;
+
+const COLORS = [
+  'hsl(var(--chart-1))',
+  'hsl(var(--chart-2))',
+  'hsl(var(--chart-3))',
+  'hsl(var(--chart-4))',
+  'hsl(var(--chart-5))',
+];
 
 export default function CheckInPage() {
   const { profile, addTransaction, getTodaysSpending, transactions, updateTransaction, deleteTransaction } = useApp();
@@ -56,6 +65,17 @@ export default function CheckInPage() {
     .filter(t => t.date.startsWith(today))
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
+  const todaysExpenseData = useMemo(() => {
+    const categoryTotals = todaysTransactions.reduce((acc, t) => {
+      acc[t.category] = (acc[t.category] || 0) + t.amount;
+      return acc;
+    }, {} as { [key: string]: number });
+
+    return Object.entries(categoryTotals)
+      .map(([name, value]) => ({ name, value }))
+      .sort((a, b) => b.value - a.value);
+  }, [todaysTransactions]);
+
   function onSubmit(data: ExpenseValues) {
     addTransaction(data);
     form.reset({ amount: 0, category: '', description: ''});
@@ -80,8 +100,8 @@ export default function CheckInPage() {
 
   return (
     <>
-    <div className="grid gap-8 md:grid-cols-2">
-      <Card>
+    <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+      <Card className="lg:col-span-1">
         <CardHeader>
           <CardTitle className="font-headline">Log Today's Expense</CardTitle>
           <CardDescription>Keep track of your daily spending.</CardDescription>
@@ -143,7 +163,7 @@ export default function CheckInPage() {
         </CardContent>
       </Card>
       
-      <div className="space-y-8">
+      <div className="space-y-8 lg:col-span-2">
         <Card>
           <CardHeader>
             <CardTitle className="font-headline">Today's Spending Summary</CardTitle>
@@ -161,6 +181,54 @@ export default function CheckInPage() {
             </div>
           </CardContent>
         </Card>
+
+        {todaysTransactions.length > 0 && (
+          <Card>
+            <CardHeader>
+                <CardTitle className="font-headline">Today's Breakdown</CardTitle>
+                <CardDescription>How your spending is distributed today.</CardDescription>
+            </CardHeader>
+            <CardContent>
+                <ResponsiveContainer width="100%" height={250}>
+                  <RechartsPieChart>
+                    <Pie
+                      data={todaysExpenseData}
+                      cx="50%"
+                      cy="50%"
+                      labelLine={false}
+                      outerRadius={100}
+                      fill="#8884d8"
+                      dataKey="value"
+                      nameKey="name"
+                      label={({ cx, cy, midAngle, innerRadius, outerRadius, percent }) => {
+                        if (percent < 0.05) return null;
+                        const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
+                        const x = cx + radius * Math.cos(-midAngle * (Math.PI / 180));
+                        const y = cy + radius * Math.sin(-midAngle * (Math.PI / 180));
+                        return (
+                          <text x={x} y={y} fill="white" textAnchor="middle" dominantBaseline="central">
+                            {`${(percent * 100).toFixed(0)}%`}
+                          </text>
+                        );
+                      }}
+                    >
+                      {todaysExpenseData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip
+                      formatter={(value: number) => `₹${value.toFixed(2)}`}
+                      contentStyle={{
+                        backgroundColor: 'hsl(var(--background))',
+                        borderColor: 'hsl(var(--border))',
+                      }}
+                    />
+                    <Legend />
+                  </RechartsPieChart>
+                </ResponsiveContainer>
+            </CardContent>
+          </Card>
+        )}
 
         <Card>
           <CardHeader>
@@ -222,7 +290,11 @@ export default function CheckInPage() {
                 </TableBody>
               </Table>
             ) : (
-              <p className="text-muted-foreground text-center py-4">No expenses logged for today yet.</p>
+                <div className="flex flex-col items-center justify-center h-[150px] text-center">
+                    <PieChart className="h-10 w-10 text-muted-foreground" />
+                    <p className="mt-4 text-muted-foreground">No expenses logged for today yet.</p>
+                    <p className="text-sm text-muted-foreground">Your spending breakdown will appear here.</p>
+                </div>
             )}
           </CardContent>
         </Card>
@@ -294,3 +366,5 @@ export default function CheckInPage() {
     </>
   );
 }
+
+    
