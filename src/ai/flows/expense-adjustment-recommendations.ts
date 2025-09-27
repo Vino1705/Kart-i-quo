@@ -12,27 +12,27 @@ import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
 const ExpenseAdjustmentRecommendationsInputSchema = z.object({
-  income: z.number().describe('The user\u2019s total monthly income in Indian Rupees.'),
+  income: z.number().describe('The user’s total monthly income in Indian Rupees.'),
   fixedExpenses: z.array(
     z.object({
       name: z.string().describe('The name of the fixed expense.'),
       amount: z.number().describe('The amount of the fixed expense in Indian Rupees.'),
     })
-  ).describe('A list of the user\u2019s fixed monthly expenses.'),
+  ).describe('A list of the user’s fixed monthly expenses.'),
   goals: z.array(
     z.object({
       name: z.string().describe('The name of the financial goal.'),
       target: z.number().describe('The target amount for the financial goal in Indian Rupees.'),
-      timelineMonths: z.number().describe('The timeline for the financial goal in months.'),
+      timelineMonths: z.number().optional().describe('The timeline for the financial goal in months.'),
     })
-  ).describe('A list of the user\u2019s financial goals.'),
+  ).describe('A list of the user’s financial goals.'),
   currentExpenses: z.array(
     z.object({
       name: z.string().describe('The name of the expense.'),
       amount: z.number().describe('The amount spent on the expense in Indian Rupees.'),
     })
-  ).describe('A list of the user\u2019s current expenses.'),
-  discretionarySpendingLimit: z.number().describe('The user\u2019s daily discretionary spending limit.'),
+  ).describe('A list of the user’s current expenses.'),
+  discretionarySpendingLimit: z.number().describe('The user’s daily discretionary spending limit.'),
 });
 
 export type ExpenseAdjustmentRecommendationsInput = z.infer<
