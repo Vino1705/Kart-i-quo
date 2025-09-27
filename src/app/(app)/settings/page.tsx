@@ -72,7 +72,7 @@ export default function SettingsPage() {
     const disposableIncome = income - needs;
     const wants = disposableIncome >= 0 ? disposableIncome * 0.6 : 0;
     const savings = disposableIncome >= 0 ? disposableIncome * 0.4 : 0;
-    const dailyLimit = wants > 0 ? wants / 30 : 0;
+    const daily = wants > 0 ? wants / 30 : 0;
 
     const profileData = {
       ...profile,
@@ -82,7 +82,7 @@ export default function SettingsPage() {
           id: exp.id || Math.random().toString(),
           startDate: exp.timelineMonths && !exp.startDate ? formatISO(new Date()) : exp.startDate
       })) || [],
-      dailySpendingLimit: dailyLimit,
+      dailySpendingLimit: daily,
       monthlyNeeds: needs,
       monthlyWants: wants,
       monthlySavings: savings,

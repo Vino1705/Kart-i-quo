@@ -86,7 +86,7 @@ export default function OnboardingPage() {
     const disposableIncome = income - needs;
     const wants = disposableIncome >= 0 ? disposableIncome * 0.6 : 0;
     const savings = disposableIncome >= 0 ? disposableIncome * 0.4 : 0;
-    const dailyLimit = wants > 0 ? wants / 30 : 0;
+    const daily = wants > 0 ? wants / 30 : 0;
 
     const profileData = {
       ...data,
@@ -95,7 +95,7 @@ export default function OnboardingPage() {
         id: Math.random().toString(),
         startDate: exp.timelineMonths ? formatISO(new Date()) : undefined,
       })) || [],
-      dailySpendingLimit: dailyLimit,
+      dailySpendingLimit: daily,
       monthlyNeeds: needs,
       monthlyWants: wants,
       monthlySavings: savings,
