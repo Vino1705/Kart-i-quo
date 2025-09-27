@@ -70,8 +70,8 @@ export default function OnboardingPage() {
 
     const needs = fixed;
     const disposableIncome = income - needs;
-    const wants = disposableIncome * 0.6; // 60% of disposable for wants
-    const savings = disposableIncome * 0.4; // 40% of disposable for savings
+    const wants = disposableIncome >= 0 ? disposableIncome * 0.6 : 0;
+    const savings = disposableIncome >= 0 ? disposableIncome * 0.4 : 0;
     const daily = wants > 0 ? wants / 30 : 0;
 
     return { monthlyNeeds: needs, monthlyWants: wants, monthlySavings: savings, dailyLimit: daily };
@@ -84,8 +84,8 @@ export default function OnboardingPage() {
     
     const needs = fixed;
     const disposableIncome = income - needs;
-    const wants = disposableIncome * 0.6;
-    const savings = disposableIncome * 0.4;
+    const wants = disposableIncome >= 0 ? disposableIncome * 0.6 : 0;
+    const savings = disposableIncome >= 0 ? disposableIncome * 0.4 : 0;
     const dailyLimit = wants > 0 ? wants / 30 : 0;
 
     const profileData = {
