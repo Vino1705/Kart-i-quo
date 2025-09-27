@@ -59,13 +59,11 @@ export default function Chatbot() {
     setIsLoading(true);
 
     try {
-      const fixedExpensesString = JSON.stringify(profile.fixedExpenses.map(e => ({ name: e.name, amount: e.amount })));
-      
       const assistantInput: ConversationalFinanceAssistantInput = {
         query: input,
         role: profile.role || 'Professional',
         income: profile.income,
-        fixedExpenses: fixedExpensesString,
+        fixedExpenses: profile.fixedExpenses.map(e => ({ name: e.name, amount: e.amount })),
         dailySpendingLimit: profile.dailySpendingLimit,
         savings: goals.reduce((sum, g) => sum + g.currentAmount, 0),
       };

@@ -17,7 +17,14 @@ const ConversationalFinanceAssistantInputSchema = z.object({
     .enum(['Student', 'Professional', 'Housewife'])
     .describe('The user role for tailored advice.'),
   income: z.number().describe('The user income.'),
-  fixedExpenses: z.string().describe('The user fixed expenses.'),
+  fixedExpenses: z
+    .array(
+      z.object({
+        name: z.string(),
+        amount: z.number(),
+      })
+    )
+    .describe('The user fixed expenses.'),
   dailySpendingLimit: z.number().describe('The user daily spending limit.'),
   savings: z.number().describe('The user savings.'),
 });
@@ -47,7 +54,10 @@ const prompt = ai.definePrompt({
 You have access to the following information about the user:
 - Role: {{{role}}}
 - Income: {{{income}}}
-- Fixed Expenses: {{{fixedExpenses}}}
+- Fixed Expenses:
+{{#each fixedExpenses}}
+  - {{name}}: ₹{{amount}}
+{{/each}}
 - Daily Spending Limit: {{{dailySpendingLimit}}}
 - Savings: {{{savings}}}
 
