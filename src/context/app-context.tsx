@@ -19,6 +19,8 @@ interface AppContextType {
   updateGoal: (goalId: string, amount: number) => void;
   getTodaysSpending: () => number;
   logout: () => void;
+  updateTransaction: (transactionId: string, updatedTransaction: Partial<Omit<Transaction, 'id' | 'date'>>) => void;
+  deleteTransaction: (transactionId: string) => void;
 }
 
 export const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -113,6 +115,28 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     setGoals(newGoals);
     persistState('kwik-kash-goals', newGoals);
   };
+  
+  const updateTransaction = (transactionId: string, updatedData: Partial<Omit<Transaction, 'id' | 'date'>>) => {
+    const newTransactions = transactions.map(t =>
+      t.id === transactionId ? { ...t, ...updatedData } : t
+    );
+    setTransactions(newTransactions);
+    persistState('kwik-kash-transactions', newTransactions);
+    toast({
+        title: 'Transaction Updated',
+        description: 'Your expense has been successfully updated.',
+    });
+  };
+
+  const deleteTransaction = (transactionId: string) => {
+    const newTransactions = transactions.filter(t => t.id !== transactionId);
+    setTransactions(newTransactions);
+    persistState('kwik-kash-transactions', newTransactions);
+    toast({
+        title: 'Transaction Deleted',
+        description: 'Your expense has been removed.',
+    });
+  };
 
   const getTodaysSpending = () => {
     const today = new Date().toISOString().split('T')[0];
@@ -144,8 +168,12 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     addTransaction,
     updateGoal,
     getTodaysSpending,
-    logout
+    logout,
+    updateTransaction,
+    deleteTransaction,
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 };
+
+    

@@ -13,8 +13,13 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { expenseCategories, Transaction } from '@/lib/types';
 import { Progress } from '@/components/ui/progress';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { useState } from 'react';
+import { Pencil, Trash2 } from 'lucide-react';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 
 const expenseSchema = z.object({
+  id: z.string().optional(),
   amount: z.coerce.number().min(0.01, 'Amount must be positive'),
   category: z.string().min(1, 'Please select a category'),
   description: z.string().min(1, 'Description is required'),
@@ -23,7 +28,10 @@ const expenseSchema = z.object({
 type ExpenseValues = z.infer<typeof expenseSchema>;
 
 export default function CheckInPage() {
-  const { profile, addTransaction, getTodaysSpending, transactions } = useApp();
+  const { profile, addTransaction, getTodaysSpending, transactions, updateTransaction, deleteTransaction } = useApp();
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
+
   const form = useForm<ExpenseValues>({
     resolver: zodResolver(expenseSchema),
     defaultValues: {
@@ -31,6 +39,10 @@ export default function CheckInPage() {
       category: '',
       description: '',
     },
+  });
+
+  const editForm = useForm<ExpenseValues>({
+    resolver: zodResolver(expenseSchema)
   });
 
   const todaysSpending = getTodaysSpending();
@@ -45,7 +57,24 @@ export default function CheckInPage() {
 
   function onSubmit(data: ExpenseValues) {
     addTransaction(data);
-    form.reset();
+    form.reset({ amount: 0, category: '', description: ''});
+  }
+
+  function onEditSubmit(data: ExpenseValues) {
+    if (!editingTransaction) return;
+    updateTransaction(editingTransaction.id, data);
+    setIsEditDialogOpen(false);
+    setEditingTransaction(null);
+  }
+
+  function handleEditClick(transaction: Transaction) {
+    setEditingTransaction(transaction);
+    editForm.reset(transaction);
+    setIsEditDialogOpen(true);
+  }
+
+  function handleDelete(transactionId: string) {
+    deleteTransaction(transactionId);
   }
 
   return (
@@ -77,7 +106,7 @@ export default function CheckInPage() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Category</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Select a category" />
@@ -144,6 +173,7 @@ export default function CheckInPage() {
                     <TableHead>Description</TableHead>
                     <TableHead>Category</TableHead>
                     <TableHead className="text-right">Amount</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -159,6 +189,32 @@ export default function CheckInPage() {
                       <TableCell className="font-medium">{t.description}</TableCell>
                       <TableCell>{t.category}</TableCell>
                       <TableCell className="text-right">₹{t.amount.toFixed(2)}</TableCell>
+                      <TableCell className="text-right">
+                         <div className="flex justify-end gap-2">
+                            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleEditClick(t)}>
+                                <Pencil className="h-4 w-4" />
+                            </Button>
+                             <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive hover:text-destructive">
+                                    <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    This action cannot be undone. This will permanently delete this transaction.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                  <AlertDialogAction onClick={() => handleDelete(t.id)}>Delete</AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+                         </div>
+                      </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -169,6 +225,70 @@ export default function CheckInPage() {
           </CardContent>
         </Card>
       </div>
+
+       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+            <DialogContent>
+                <DialogHeader>
+                    <DialogTitle>Edit Expense</DialogTitle>
+                    <DialogDescription>Update the details of your expense.</DialogDescription>
+                </DialogHeader>
+                <Form {...editForm}>
+                    <form onSubmit={editForm.handleSubmit(onEditSubmit)} className="space-y-6">
+                        <FormField
+                            control={editForm.control}
+                            name="amount"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Amount (₹)</FormLabel>
+                                    <FormControl>
+                                        <Input type="number" step="0.01" {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                        <FormField
+                            control={editForm.control}
+                            name="category"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Category</FormLabel>
+                                    <Select onValueChange={field.onChange} value={field.value}>
+                                        <FormControl>
+                                            <SelectTrigger>
+                                                <SelectValue placeholder="Select a category" />
+                                            </SelectTrigger>
+                                        </FormControl>
+                                        <SelectContent>
+                                            {expenseCategories.map(cat => (
+                                                <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                        <FormField
+                            control={editForm.control}
+                            name="description"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Description</FormLabel>
+                                    <FormControl>
+                                        <Input {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                        <Button type="submit" className="w-full">Save Changes</Button>
+                    </form>
+                </Form>
+            </DialogContent>
+        </Dialog>
     </div>
   );
 }
+
+    
