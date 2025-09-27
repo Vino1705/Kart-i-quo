@@ -43,10 +43,10 @@ export default function LandingPage() {
           <div className="flex flex-1 items-center justify-end space-x-4">
             <nav className="flex items-center space-x-2">
               <Button variant="ghost" asChild>
-                <Link href="/dashboard/onboarding">Login</Link>
+                <Link href="/login">Login</Link>
               </Button>
               <Button asChild>
-                <Link href="/dashboard/onboarding">Get Started</Link>
+                <Link href="/signup">Get Started</Link>
               </Button>
             </nav>
           </div>
@@ -66,7 +66,7 @@ export default function LandingPage() {
               </p>
               <div className="flex gap-4">
                 <Button size="lg" asChild>
-                  <Link href="/dashboard/onboarding">Start for Free</Link>
+                  <Link href="/signup">Start for Free</Link>
                 </Button>
               </div>
             </div>
@@ -120,7 +120,7 @@ export default function LandingPage() {
               Join Kwik Kash today and start your journey towards financial freedom.
             </p>
             <Button variant="secondary" size="lg" className="mt-8" asChild>
-              <Link href="/dashboard/onboarding">Sign Up Now</Link>
+              <Link href="/signup">Sign Up Now</Link>
             </Button>
           </div>
         </section>

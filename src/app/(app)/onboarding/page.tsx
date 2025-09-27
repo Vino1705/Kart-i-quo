@@ -56,7 +56,7 @@ export default function OnboardingPage() {
   }
 
   return (
-    <div className="flex items-center justify-center p-4">
+    <div className="flex items-center justify-center min-h-screen bg-background p-4">
       <Card className="w-full max-w-2xl">
         <CardHeader>
           <CardTitle className="text-2xl font-headline">Welcome to Kwik Kash!</CardTitle>

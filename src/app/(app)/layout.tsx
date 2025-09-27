@@ -13,7 +13,8 @@ import {
   LogOut,
   Settings,
 } from 'lucide-react';
-
+import { onAuthStateChanged, getAuth } from 'firebase/auth';
+import firebaseApp from '@/lib/firebase';
 import { AppProvider, useApp } from '@/context/app-context';
 import { SidebarProvider, Sidebar, SidebarHeader, SidebarContent, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarFooter, SidebarTrigger, SidebarInset } from '@/components/ui/sidebar';
 import { DashboardHeader } from '@/components/dashboard-header';
@@ -31,17 +32,31 @@ const navItems = [
 function AppLayoutContent({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
-  const { onboardingComplete } = useApp();
+  const { onboardingComplete, logout, profile } = useApp();
+  const auth = getAuth(firebaseApp);
 
   useEffect(() => {
-    const isOnboardingPage = pathname.endsWith('/onboarding');
-    if (!onboardingComplete && !isOnboardingPage) {
-      router.replace('/onboarding');
-    } else if (onboardingComplete && isOnboardingPage) {
-      router.replace('/dashboard');
-    }
-  }, [onboardingComplete, pathname, router]);
+    const unsubscribe = onAuthStateChanged(auth, user => {
+      if (!user) {
+        router.replace('/login');
+      } else {
+        const isOnboardingPage = pathname === '/onboarding';
+        if (!onboardingComplete && !isOnboardingPage) {
+          router.replace('/onboarding');
+        } else if (onboardingComplete && isOnboardingPage) {
+          router.replace('/dashboard');
+        }
+      }
+    });
 
+    return () => unsubscribe();
+  }, [onboardingComplete, pathname, router, auth]);
+
+  if (!profile) return (
+     <div className="flex h-screen items-center justify-center">
+        <p>Loading your profile...</p>
+     </div>
+  );
 
   return (
     <SidebarProvider>
@@ -57,9 +72,9 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
             <SidebarMenu>
               {navItems.map((item) => (
                 <SidebarMenuItem key={item.href}>
-                  <Link href={`/dashboard${item.href.substring(10)}`}>
+                  <Link href={item.href}>
                     <SidebarMenuButton
-                      isActive={pathname.endsWith(item.href)}
+                      isActive={pathname === item.href}
                       tooltip={item.label}
                     >
                       {item.icon}
@@ -79,12 +94,10 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
                     </SidebarMenuButton>
                 </SidebarMenuItem>
                 <SidebarMenuItem>
-                    <Link href="/">
-                        <SidebarMenuButton tooltip="Log Out">
-                            <LogOut />
-                            <span>Log Out</span>
-                        </SidebarMenuButton>
-                    </Link>
+                    <SidebarMenuButton tooltip="Log Out" onClick={logout}>
+                        <LogOut />
+                        <span>Log Out</span>
+                    </SidebarMenuButton>
                 </SidebarMenuItem>
              </SidebarMenu>
           </SidebarFooter>

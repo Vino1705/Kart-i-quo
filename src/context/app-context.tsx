@@ -2,8 +2,11 @@
 "use client";
 
 import React, { createContext, useState, ReactNode, useEffect } from 'react';
-import type { UserProfile, Goal, Transaction, FixedExpense } from '@/lib/types';
+import type { UserProfile, Goal, Transaction } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
+import { getAuth, signOut } from 'firebase/auth';
+import firebaseApp from '@/lib/firebase';
+import { useRouter } from 'next/navigation';
 
 interface AppContextType {
   profile: UserProfile | null;
@@ -15,12 +18,14 @@ interface AppContextType {
   addTransaction: (transaction: Omit<Transaction, 'id' | 'date'>) => void;
   updateGoal: (goalId: string, amount: number) => void;
   getTodaysSpending: () => number;
+  logout: () => void;
 }
 
 export const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export const AppProvider = ({ children }: { children: ReactNode }) => {
   const { toast } = useToast();
+  const router = useRouter();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [goals, setGoals] = useState<Goal[]>([]);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -34,8 +39,11 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       const storedTransactions = localStorage.getItem('kwik-kash-transactions');
 
       if (storedProfile) {
-        setProfile(JSON.parse(storedProfile));
-        setOnboardingComplete(true);
+        const parsedProfile = JSON.parse(storedProfile);
+        setProfile(parsedProfile);
+        if (parsedProfile && parsedProfile.role) {
+            setOnboardingComplete(true);
+        }
       }
       if (storedGoals) {
         setGoals(JSON.parse(storedGoals));
@@ -112,6 +120,19 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       .reduce((sum, t) => sum + t.amount, 0);
   };
 
+  const logout = async () => {
+    const auth = getAuth(firebaseApp);
+    await signOut(auth);
+    setProfile(null);
+    setGoals([]);
+    setTransactions([]);
+    setOnboardingComplete(false);
+    localStorage.removeItem('kwik-kash-profile');
+    localStorage.removeItem('kwik-kash-goals');
+    localStorage.removeItem('kwik-kash-transactions');
+    router.push('/login');
+  }
+
   const value = {
     profile,
     goals,
@@ -121,7 +142,8 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     addGoal,
     addTransaction,
     updateGoal,
-    getTodaysSpending
+    getTodaysSpending,
+    logout
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
