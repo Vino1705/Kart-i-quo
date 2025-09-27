@@ -14,7 +14,7 @@ interface AppContextType {
   goals: Goal[];
   transactions: Transaction[];
   onboardingComplete: boolean;
-  updateProfile: (profile: Partial<UserProfile>) => void;
+  updateProfile: (profile: Partial<Omit<UserProfile, 'monthlyNeeds' | 'monthlyWants' | 'monthlySavings' | 'dailySpendingLimit'>>) => void;
   addGoal: (goal: Omit<Goal, 'id' | 'currentAmount'>) => void;
   addTransaction: (transaction: Omit<Transaction, 'id' | 'date'>) => void;
   updateGoal: (goalId: string, updatedGoal: Partial<Omit<Goal, 'id'>>) => void;
@@ -94,20 +94,25 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const updateProfile = (newProfileData: Partial<UserProfile>) => {
+  const updateProfile = (newProfileData: Partial<Omit<UserProfile, 'monthlyNeeds' | 'monthlyWants' | 'monthlySavings' | 'dailySpendingLimit'>>) => {
     const income = newProfileData.income ?? profile?.income ?? 0;
-    const fixedExpenses = newProfileData.fixedExpenses ?? profile?.fixedExpenses ?? [];
+    const fixedExpenses = newProfileData.fixedExpenses?.map(exp => ({
+        ...exp,
+        id: exp.id || Math.random().toString(),
+        startDate: exp.timelineMonths && !exp.startDate ? formatISO(new Date()) : exp.startDate
+    })) ?? profile?.fixedExpenses ?? [];
     
-    const needs = fixedExpenses.reduce((sum, exp) => sum + exp.amount, 0);
+    const needs = fixedExpenses.reduce((sum, exp) => sum + (exp.amount || 0), 0);
     const disposableIncome = income - needs;
     
     const wants = disposableIncome * 0.6;
     const savings = disposableIncome * 0.4;
     const daily = wants > 0 ? wants / 30 : 0;
 
-    const updatedProfile = { 
+    const updatedProfile: UserProfile = { 
         ...profile, 
         ...newProfileData,
+        fixedExpenses,
         monthlyNeeds: needs,
         monthlyWants: wants,
         monthlySavings: savings,
@@ -115,9 +120,6 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     } as UserProfile;
     
     setProfile(updatedProfile);
-    if(newProfileData.goals) {
-      setGoals(newProfileData.goals);
-    }
     setOnboardingComplete(true);
     persistState('kwik-kash-profile', updatedProfile);
   };

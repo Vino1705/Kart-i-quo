@@ -32,7 +32,7 @@ function StatCard({ title, value, icon, change, changeType }: { title: string, v
 }
 
 export default function DashboardPage() {
-  const { profile, goals, transactions, getTodaysSpending } = useApp();
+  const { profile, goals, transactions, getTodaysSpending, getTotalGoalContributions } = useApp();
 
   const totalGoalTarget = goals.reduce((sum, g) => sum + g.targetAmount, 0);
   const totalGoalSaved = goals.reduce((sum, g) => sum + g.currentAmount, 0);
@@ -68,7 +68,7 @@ export default function DashboardPage() {
       };
     }
     
-    const totalGoalContributions = goals.reduce((sum, g) => sum + g.monthlyContribution, 0);
+    const totalGoalContributions = getTotalGoalContributions();
     const emergency = Math.max(0, profile.monthlySavings - totalGoalContributions);
   
     return {
@@ -79,7 +79,7 @@ export default function DashboardPage() {
       goalContributions: totalGoalContributions,
       emergencyFund: emergency,
     };
-  }, [profile, goals]);
+  }, [profile, getTotalGoalContributions]);
   
   const dailySavings = dailySpendingLimit - todaysSpending;
 
@@ -134,7 +134,7 @@ export default function DashboardPage() {
             title="Needs"
             value={`₹${monthlyNeeds.toFixed(2)}`}
             icon={<Wallet className="h-5 w-5 text-primary" />}
-            change={`Your fixed monthly expenses`}
+            change={`Your total fixed costs.`}
           />
           <StatCard
             title="Wants"

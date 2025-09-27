@@ -68,11 +68,11 @@ export default function OnboardingPage() {
     const income = Number(watchedIncome) || 0;
     const fixedExpenses = watchedFixedExpenses || [];
     
-    const needs = fixedExpenses.reduce((sum, exp) => sum + exp.amount, 0);
+    const needs = fixedExpenses.reduce((sum, exp) => sum + (exp.amount || 0), 0);
     const disposableIncome = income - needs;
     
-    const wants = disposableIncome * 0.6; // 60% of disposable for wants
-    const savings = disposableIncome * 0.4; // 40% of disposable for savings
+    const wants = disposableIncome * 0.6;
+    const savings = disposableIncome * 0.4;
     const daily = wants > 0 ? wants / 30 : 0;
 
     return { monthlyNeeds: needs, monthlyWants: wants, monthlySavings: savings, dailyLimit: daily };
@@ -80,28 +80,7 @@ export default function OnboardingPage() {
 
 
   function onSubmit(data: OnboardingValues) {
-    const income = data.income;
-    const fixedExpenses = data.fixedExpenses || [];
-
-    const needs = fixedExpenses.reduce((sum, exp) => sum + exp.amount, 0);
-    const disposableIncome = income - needs;
-    const wants = disposableIncome * 0.6;
-    const savings = disposableIncome * 0.4;
-    const daily = wants > 0 ? wants / 30 : 0;
-
-    const profileData = {
-      ...data,
-      fixedExpenses: fixedExpenses?.map(exp => ({ 
-        ...exp, 
-        id: Math.random().toString(),
-        startDate: exp.timelineMonths ? formatISO(new Date()) : undefined,
-      })) || [],
-      dailySpendingLimit: daily,
-      monthlyNeeds: needs,
-      monthlyWants: wants,
-      monthlySavings: savings,
-    };
-    updateProfile(profileData);
+    updateProfile(data);
     router.push('/dashboard');
   }
 
