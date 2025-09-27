@@ -11,7 +11,7 @@ import { useApp } from '@/hooks/use-app';
 import { conversationalFinanceAssistant, ConversationalFinanceAssistantInput } from '@/ai/flows/conversational-finance-assistant';
 import { Avatar, AvatarFallback } from './ui/avatar';
 import { cn } from '@/lib/utils';
-import { useToast } from './ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 
 interface Message {
   role: 'user' | 'assistant';

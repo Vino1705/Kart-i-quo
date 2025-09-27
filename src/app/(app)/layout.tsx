@@ -15,7 +15,8 @@ import {
 } from 'lucide-react';
 import { onAuthStateChanged, getAuth } from 'firebase/auth';
 import firebaseApp from '@/lib/firebase';
-import { AppProvider, useApp } from '@/context/app-context';
+import { AppProvider } from '@/context/app-context';
+import { useApp } from '@/hooks/use-app';
 import { SidebarProvider, Sidebar, SidebarHeader, SidebarContent, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarFooter, SidebarTrigger, SidebarInset } from '@/components/ui/sidebar';
 import { DashboardHeader } from '@/components/dashboard-header';
 import Chatbot from '@/components/chatbot';
