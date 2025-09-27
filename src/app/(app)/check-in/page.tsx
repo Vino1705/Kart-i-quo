@@ -17,6 +17,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { useState } from 'react';
 import { Pencil, Trash2 } from 'lucide-react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { EndOfDaySummary } from '@/components/end-of-day-summary';
 
 const expenseSchema = z.object({
   id: z.string().optional(),
@@ -78,6 +79,7 @@ export default function CheckInPage() {
   }
 
   return (
+    <>
     <div className="grid gap-8 md:grid-cols-2">
       <Card>
         <CardHeader>
@@ -288,7 +290,7 @@ export default function CheckInPage() {
             </DialogContent>
         </Dialog>
     </div>
+    <EndOfDaySummary />
+    </>
   );
 }
-
-    
