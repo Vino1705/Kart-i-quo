@@ -13,7 +13,7 @@ interface AppContextType {
   goals: Goal[];
   transactions: Transaction[];
   onboardingComplete: boolean;
-  updateProfile: (profile: UserProfile) => void;
+  updateProfile: (profile: Partial<UserProfile>) => void;
   addGoal: (goal: Omit<Goal, 'id' | 'currentAmount'>) => void;
   addTransaction: (transaction: Omit<Transaction, 'id' | 'date'>) => void;
   updateGoal: (goalId: string, amount: number) => void;
@@ -64,10 +64,11 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const updateProfile = (newProfile: UserProfile) => {
-    setProfile(newProfile);
+  const updateProfile = (newProfileData: Partial<UserProfile>) => {
+    const updatedProfile = { ...profile, ...newProfileData } as UserProfile;
+    setProfile(updatedProfile);
     setOnboardingComplete(true);
-    persistState('kwik-kash-profile', newProfile);
+    persistState('kwik-kash-profile', updatedProfile);
   };
 
   const addGoal = (goalData: Omit<Goal, 'id' | 'currentAmount'>) => {

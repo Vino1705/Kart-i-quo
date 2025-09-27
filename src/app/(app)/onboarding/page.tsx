@@ -68,7 +68,7 @@ export default function OnboardingPage() {
     const income = Number(watchedIncome) || 0;
     const fixed = watchedFixedExpenses?.reduce((sum, exp) => sum + (Number(exp.amount) || 0), 0) || 0;
 
-    const needs = income * 0.5;
+    const needs = fixed;
     const wants = income * 0.3;
     const savings = income * 0.2;
     const daily = wants / 30;
@@ -79,7 +79,8 @@ export default function OnboardingPage() {
 
   function onSubmit(data: OnboardingValues) {
     const income = data.income;
-    const needs = income * 0.5;
+    const fixed = data.fixedExpenses?.reduce((sum, exp) => sum + (Number(exp.amount) || 0), 0) || 0;
+    const needs = fixed;
     const wants = income * 0.3;
     const savings = income * 0.2;
     const dailyLimit = wants / 30;
@@ -216,7 +217,7 @@ export default function OnboardingPage() {
                     <CardDescription>Based on the 50/30/20 rule, here's our suggestion for your monthly budget.</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-2">
-                    <SummaryCard title="Needs (50%)" amount={monthlyNeeds} icon={<Wallet className="h-5 w-5 text-primary" />} description={`Target for fixed costs. Yours: ₹${totalFixed.toFixed(2)}`} />
+                    <SummaryCard title="Needs (50%)" amount={monthlyNeeds} icon={<Wallet className="h-5 w-5 text-primary" />} description={`Your calculated fixed costs.`} />
                     <SummaryCard title="Wants (30%)" amount={monthlyWants} icon={<ShoppingCart className="h-5 w-5 text-accent" />} description="For discretionary spending." />
                     <SummaryCard title="Savings (20%)" amount={monthlySavings} icon={<PiggyBank className="h-5 w-5 text-green-500" />} description="For goals & emergencies." />
                   </CardContent>
