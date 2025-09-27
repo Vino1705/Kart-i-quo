@@ -32,6 +32,8 @@ export function EndOfDaySummary() {
   const remaining = dailyLimit - todaysSpending;
   const isOverBudget = remaining < 0;
   const progress = dailyLimit > 0 ? (todaysSpending / dailyLimit) * 100 : 0;
+  
+  const savedAmount = dailyLimit - todaysSpending;
 
   const handleClose = () => setIsOpen(false);
 
@@ -74,7 +76,7 @@ export function EndOfDaySummary() {
             <div className={`flex items-center justify-center gap-2 p-3 rounded-lg ${isOverBudget ? 'bg-destructive/10 text-destructive' : 'bg-green-500/10 text-green-600'}`}>
                 {isOverBudget ? <TrendingDown className="h-5 w-5" /> : <TrendingUp className="h-5 w-5" />}
                 <p className="font-bold text-lg">
-                    {isOverBudget ? `₹${Math.abs(remaining).toFixed(2)} Over Budget` : `₹${remaining.toFixed(2)} Saved`}
+                    {isOverBudget ? `₹${Math.abs(remaining).toFixed(2)} Over Budget` : `₹${savedAmount.toFixed(2)} Saved`}
                 </p>
             </div>
         </div>
