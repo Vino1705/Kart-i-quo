@@ -13,6 +13,7 @@ const pageTitles: { [key: string]: string } = {
   '/expenses': 'Expense Analysis',
   '/transactions': 'Transaction History',
   '/onboarding': 'Welcome to Kwik Kash',
+  '/settings': 'Profile Settings',
 };
 
 export function DashboardHeader() {
