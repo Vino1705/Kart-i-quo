@@ -51,9 +51,32 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       }
       if (storedGoals) {
         setGoals(JSON.parse(storedGoals));
+      } else {
+        // Set initial goal for demo purposes if none exist
+        const initialGoal: Goal = {
+          id: '1',
+          name: 'New Laptop',
+          targetAmount: 80000,
+          currentAmount: 5000,
+          monthlyContribution: 5000,
+          timelineMonths: 16
+        };
+        setGoals([initialGoal]);
+        persistState('kwik-kash-goals', [initialGoal]);
       }
       if (storedTransactions) {
         setTransactions(JSON.parse(storedTransactions));
+      } else {
+        // Set initial transaction for demo purposes
+        const initialTransaction: Transaction = {
+          id: '1',
+          amount: 150,
+          category: 'Food & Dining',
+          description: 'Lunch with friends',
+          date: new Date().toISOString()
+        };
+        setTransactions([initialTransaction]);
+        persistState('kwik-kash-transactions', [initialTransaction]);
       }
     } catch (error) {
       console.error("Failed to load data from localStorage", error);

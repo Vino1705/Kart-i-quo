@@ -55,7 +55,7 @@ function GoalDialog({ goal, children }: { goal?: Goal, children: React.ReactNode
     return { timelineMonths: 0, suggestion: 'Enter an amount and contribution to see a forecast.' };
   }, [targetAmount, monthlyContribution]);
 
-  const totalSavings = (profile?.monthlySavings || 0);
+  const totalSavings = profile?.monthlySavings || 0;
   const committedContributions = getTotalGoalContributions() - (goal?.monthlyContribution || 0);
   const availableSavings = totalSavings - committedContributions;
 
@@ -148,12 +148,15 @@ function GoalDialog({ goal, children }: { goal?: Goal, children: React.ReactNode
 }
 
 function ContributeDialog({ goal, children }: { goal: Goal, children: React.ReactNode }) {
-    const { contributeToGoal, profile } = useApp();
+    const { contributeToGoal, profile, getTotalGoalContributions } = useApp();
     const [amount, setAmount] = useState(goal.monthlyContribution);
     const [open, setOpen] = useState(false);
     const { toast } = useToast();
 
-    const emergencyFund = (profile?.monthlySavings || 0) - (profile?.fixedExpenses.reduce((acc, exp) => acc + (exp.amount || 0), 0) || 0);
+    const monthlySavings = profile?.monthlySavings || 0;
+    const goalContributions = getTotalGoalContributions();
+    const emergencyFund = monthlySavings - goalContributions;
+
 
     const handleContribute = () => {
         if (amount <= 0) {
@@ -187,7 +190,7 @@ function ContributeDialog({ goal, children }: { goal: Goal, children: React.Reac
                      <Alert variant="default">
                         <Wallet className="h-4 w-4" />
                         <AlertDescription>
-                            Your remaining savings after this contribution would be approximately ₹{(emergencyFund - amount).toFixed(2)}.
+                            Your remaining emergency fund savings after this contribution would be approximately ₹{(emergencyFund - amount).toFixed(2)}.
                         </AlertDescription>
                     </Alert>
                 </div>
