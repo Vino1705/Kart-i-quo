@@ -392,16 +392,18 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
 
   const deleteAccount = async () => {
     try {
+        // Remove both new and old data to be safe
         localStorage.removeItem(PROFILE_KEY);
         localStorage.removeItem(GOALS_KEY);
         localStorage.removeItem(TRANSACTIONS_KEY);
         localStorage.removeItem(LOGGED_PAYMENTS_KEY);
+        localStorage.removeItem(OLD_PROFILE_KEY);
+        localStorage.removeItem(OLD_GOALS_KEY);
+        localStorage.removeItem(OLD_TRANSACTIONS_KEY);
+        localStorage.removeItem(OLD_LOGGED_PAYMENTS_KEY);
 
         const auth = getAuth(firebaseApp);
         if (auth.currentUser) {
-            // Note: Deleting user from Firebase Auth is a sensitive operation
-            // and requires re-authentication. For this client-side implementation,
-            // we will just sign them out and clear local data.
             await signOut(auth);
         }
 
