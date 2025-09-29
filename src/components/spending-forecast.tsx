@@ -5,10 +5,11 @@ import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useApp } from '@/hooks/use-app';
-import { forecastSpending, ForecastSpendingInput } from '@/ai/flows/spending-forecasting';
+import { getSpendingAlerts, SpendingAlertsInput } from '@/ai/flows/spending-alerts';
 import { BrainCircuit, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { subDays, isAfter } from 'date-fns';
 
 export function SpendingForecast() {
   const { profile, goals, transactions } = useApp();
@@ -25,11 +26,11 @@ export function SpendingForecast() {
       });
       return;
     }
-    if (transactions.length < 5) {
+    if (transactions.length < 3) {
       toast({
         variant: 'destructive',
         title: 'Not Enough Data',
-        description: 'Log at least 5 expenses before getting a forecast.',
+        description: 'Log at least 3 expenses before getting a forecast.',
       });
       return;
     }
@@ -38,17 +39,30 @@ export function SpendingForecast() {
     setForecast(null);
 
     try {
-      const input: ForecastSpendingInput = {
+      // 1. Calculate the predicted limit locally
+      const sevenDaysAgo = subDays(new Date(), 7);
+      const recentTransactions = transactions.filter(t => isAfter(new Date(t.date), sevenDaysAgo));
+      const averageDailySpending = recentTransactions.reduce((sum, t) => sum + t.amount, 0) / 7;
+      
+      const suggestedLimit = Math.max(0, profile.dailySpendingLimit - (averageDailySpending - profile.dailySpendingLimit));
+      const predictedLimit = `Based on your recent spending, we recommend a daily limit of around ₹${suggestedLimit.toFixed(2)} for the next week to stay on track.`;
+
+      // 2. Call the AI for qualitative alerts
+      const input: SpendingAlertsInput = {
         income: profile.income,
         goals: goals.map(g => ({ name: g.name, targetAmount: g.targetAmount, monthlyContribution: g.monthlyContribution })),
         expensesData: transactions
           .filter(t => t.category)
+          .slice(0, 20) // Limit to last 20 transactions for performance
           .map(t => ({ amount: t.amount, category: t.category, date: t.date })),
-        seasonalTrends: JSON.stringify({ "holidays": "none" }), // Placeholder for now
       };
 
-      const result = await forecastSpending(input);
-      setForecast(result);
+      const result = await getSpendingAlerts(input);
+      setForecast({
+        predictedLimit,
+        alerts: result.alerts,
+      });
+
     } catch (error) {
       console.error('Error fetching AI forecast:', error);
       toast({
