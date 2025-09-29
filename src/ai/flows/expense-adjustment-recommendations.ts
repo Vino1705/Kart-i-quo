@@ -59,33 +59,33 @@ const prompt = ai.definePrompt({
   name: 'expenseAdjustmentRecommendationsPrompt',
   input: {schema: ExpenseAdjustmentRecommendationsInputSchema},
   output: {schema: ExpenseAdjustmentRecommendationsOutputSchema},
-  prompt: `You are a personal finance advisor helping users adjust their expenses to meet their financial goals.
+  prompt: `You are a personal finance advisor. Your task is to provide a list of specific and actionable tips to help a user adjust their spending to meet their financial goals.
 
-  The user has the following income: ₹{{income}}
-
-  The user has the following fixed expenses:
-  {{#each fixedExpenses}}
+## User's Financial Profile:
+- **Monthly Income:** ₹{{income}}
+- **Fixed Expenses:**
+{{#each fixedExpenses}}
   - {{name}}: ₹{{amount}}
-  {{/each}}
-
-  The user has the following financial goals:
-  {{#each goals}}
-  - {{name}}: ₹{{target}} in {{timelineMonths}} months
-  {{/each}}
-
-  The user has the following current expenses:
-  {{#each currentExpenses}}
+{{/each}}
+- **Financial Goals:**
+{{#each goals}}
+  - Save for '{{name}}' (Target: ₹{{target}} within {{timelineMonths}} months)
+{{/each}}
+- **Recent Discretionary Spending:**
+{{#each currentExpenses}}
   - {{name}}: ₹{{amount}}
-  {{/each}}
+{{/each}}
+- **Daily Spending Limit (for 'Wants'):** ₹{{discretionarySpendingLimit}}
 
-  The user has a daily discretionary spending limit of ₹{{discretionarySpendingLimit}}.
+## Your Instructions:
+1.  **Analyze the User's Data:** Review their income, fixed costs, goals, and especially their recent spending habits.
+2.  **Focus on Low-Hanging Fruit:** Identify 2-3 categories from their 'Recent Discretionary Spending' where they can make small, impactful changes.
+3.  **Generate Actionable Tips:** For each category, provide a concise, actionable tip. The tips should be realistic and easy to implement.
+4.  **Be Specific and Concise:** Do not give generic advice. Your tips must be direct and in bullet-point format.
+5.  **Contextualize for India:** Where possible, make sure the tips are relevant to an Indian context.
+6.  **Focus on Expense Reduction Only:** Do not suggest increasing income. All tips must be about reducing spending.
 
-  Provide a list of specific and actionable recommendations on how the user can adjust their expenses to better meet their financial goals. Be mindful of the user's income, expenses, and goals when providing recommendations.
-  Do not make recommendations that are not feasible or realistic.
-  Do not recommend increasing income, only focus on decreasing expenses. Focus on the lowest hanging fruits. Only recommend small changes. Be concise. Focus on specific expenses the user has provided.
-  The recommendations should be in the Indian context, where possible.
-  The recommendations should be in bullet points.
-  `,
+Based on these instructions, generate a list of tips for the 'recommendations' field.`,
 });
 
 const expenseAdjustmentRecommendationsFlow = ai.defineFlow(
