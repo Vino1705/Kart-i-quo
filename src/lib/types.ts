@@ -9,6 +9,11 @@ export interface UserProfile {
   monthlyNeeds: number;
   monthlyWants: number;
   monthlySavings: number;
+  emergencyFund: {
+    target: number;
+    current: number;
+    history: EmergencyFundEntry[];
+  };
 }
 
 export interface FixedExpense {
@@ -60,4 +65,12 @@ export const expenseCategories = [
 // Represents a record of which month a payment was logged for a specific expense.
 // e.g., { "expense-id-123": ["2024-01", "2024-02"] }
 export type LoggedPayments = Record<string, string[]>;
+
+export interface EmergencyFundEntry {
+    id: string;
+    amount: number;
+    date: string; // ISO string
+    type: 'deposit' | 'withdrawal';
+    notes?: string;
+}
     

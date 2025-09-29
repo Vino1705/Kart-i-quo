@@ -12,6 +12,7 @@ const pageTitles: { [key: string]: string } = {
   '/goals': 'Financial Goals',
   '/expenses': 'Expense Analysis',
   '/fixed-expenses': 'Fixed Expenses Analysis',
+  '/emergency-fund': 'Emergency Fund',
   '/onboarding': 'Welcome to Kwik Kash',
   '/settings': 'Profile Settings',
 };

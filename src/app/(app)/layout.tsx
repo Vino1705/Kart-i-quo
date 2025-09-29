@@ -12,6 +12,7 @@ import {
   LogOut,
   Settings,
   CreditCard,
+  ShieldAlert,
 } from 'lucide-react';
 import { onAuthStateChanged, getAuth } from 'firebase/auth';
 import firebaseApp from '@/lib/firebase';
@@ -28,6 +29,7 @@ const navItems = [
   { href: '/goals', icon: <Target />, label: 'Goals' },
   { href: '/expenses', icon: <PieChart />, label: 'Expenses' },
   { href: '/fixed-expenses', icon: <CreditCard />, label: 'Fixed Expenses' },
+  { href: '/emergency-fund', icon: <ShieldAlert />, label: 'Emergency Fund' },
 ];
 
 function AppLayoutContent({ children }: { children: React.ReactNode }) {

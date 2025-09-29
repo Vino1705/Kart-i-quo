@@ -12,7 +12,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Trash, Wallet, PiggyBank, ShoppingCart } from 'lucide-react';
+import { Trash, Wallet, PiggyBank, ShoppingCart, ShieldAlert } from 'lucide-react';
 import React from 'react';
 import { expenseCategories } from '@/lib/types';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -20,6 +20,7 @@ import { CalendarIcon } from 'lucide-react';
 import { format } from 'date-fns';
 import { Calendar } from '@/components/ui/calendar';
 import { cn } from '@/lib/utils';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 const fixedExpenseSchema = z.object({
   name: z.string().min(1, 'Expense name is required'),
@@ -59,7 +60,7 @@ export default function OnboardingPage() {
     resolver: zodResolver(onboardingSchema),
     defaultValues: {
       income: 38000,
-      fixedExpenses: [{ name: 'Rent', amount: 18000, category: 'Rent/EMI', timelineMonths: 12 }],
+      fixedExpenses: [{ name: 'Rent', amount: 18000, category: 'Rent/EMI', timelineMonths: 12, startDate: new Date().toISOString() }],
     },
   });
 
@@ -87,7 +88,15 @@ export default function OnboardingPage() {
 
 
   function onSubmit(data: OnboardingValues) {
-    updateProfile(data);
+    const profileData = {
+        ...data,
+        emergencyFund: {
+            target: (data.income || 0) * 3, // Set initial target to 3x income
+            current: 0,
+            history: [],
+        }
+    };
+    updateProfile(profileData);
     router.push('/dashboard');
   }
 
@@ -276,6 +285,13 @@ export default function OnboardingPage() {
                     <SummaryCard title="Needs" amount={monthlyNeeds} icon={<Wallet className="h-5 w-5 text-primary" />} description="Your total fixed costs." />
                     <SummaryCard title="Wants" amount={monthlyWants} icon={<ShoppingCart className="h-5 w-5 text-accent" />} description="For discretionary spending." />
                     <SummaryCard title="Savings" amount={monthlySavings} icon={<PiggyBank className="h-5 w-5 text-green-500" />} description="For goals & emergencies." />
+                     <Alert>
+                        <ShieldAlert className="h-4 w-4" />
+                        <AlertTitle>Emergency Fund Target</AlertTitle>
+                        <AlertDescription>
+                        We'll set an initial emergency fund goal of 3x your monthly income, which is <strong>₹{(watchedIncome * 3).toFixed(2)}</strong>. You can change this later.
+                        </AlertDescription>
+                    </Alert>
                   </CardContent>
                    <CardFooter>
                      <div className="w-full flex justify-between items-center p-3 rounded-lg bg-primary/10">

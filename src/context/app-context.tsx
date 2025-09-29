@@ -2,7 +2,7 @@
 "use client";
 
 import React, { createContext, useState, ReactNode, useEffect } from 'react';
-import type { UserProfile, Goal, Transaction, FixedExpense, LoggedPayments, Contribution } from '@/lib/types';
+import type { UserProfile, Goal, Transaction, FixedExpense, LoggedPayments, Contribution, EmergencyFundEntry } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import { getAuth, signOut } from 'firebase/auth';
 import firebaseApp from '@/lib/firebase';
@@ -28,6 +28,8 @@ interface AppContextType {
   toggleFixedExpenseLoggedStatus: (expenseId: string) => void;
   isFixedExpenseLoggedForCurrentMonth: (expenseId: string) => boolean;
   getLoggedPaymentCount: (expenseId: string) => number;
+  updateEmergencyFund: (action: 'deposit' | 'withdraw', amount: number, notes?: string) => void;
+  setEmergencyFundTarget: (target: number) => void;
 }
 
 export const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -67,26 +69,34 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       const storedLoggedPayments = localStorage.getItem('kwik-kash-logged-payments');
 
       if (storedProfile) {
-        const parsedProfile: UserProfile = JSON.parse(storedProfile);
+        let parsedProfile: UserProfile = JSON.parse(storedProfile);
         
-        // Always recalculate budget to ensure consistency with current logic
+        // --- Emergency Fund Migration ---
+        if (!parsedProfile.emergencyFund) {
+            parsedProfile.emergencyFund = {
+                target: (parsedProfile.income || 0) * 3, // Default to 3x monthly income
+                current: 0,
+                history: [],
+            };
+        }
+        // --- End Migration ---
+        
         const budget = calculateBudget(parsedProfile.income, parsedProfile.fixedExpenses);
         const updatedProfile = { ...parsedProfile, ...budget };
 
         if (JSON.stringify(parsedProfile) !== JSON.stringify(updatedProfile)) {
-          persistState('kwik-kash-profile', updatedProfile); // Persist corrected profile
+          persistState('kwik-kash-profile', updatedProfile);
         }
         setProfile(updatedProfile);
 
 
-        if (parsedProfile && parsedProfile.role) {
+        if (updatedProfile && updatedProfile.role) {
             setOnboardingComplete(true);
         }
       }
       if (storedGoals) {
         setGoals(JSON.parse(storedGoals));
       } else {
-        // Set initial goal for demo purposes if none exist
         const initialContribution: Contribution = { amount: 5000, date: new Date().toISOString() };
         const initialGoal: Goal = {
           id: '1',
@@ -104,7 +114,6 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       if (storedTransactions) {
         setTransactions(JSON.parse(storedTransactions));
       } else {
-        // Set initial transaction for demo purposes
         const initialTransaction: Transaction = {
           id: '1',
           amount: 150,
@@ -147,6 +156,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         ...newProfileData,
         fixedExpenses,
         ...budget,
+        emergencyFund: profile?.emergencyFund || { target: income * 3, current: 0, history: [] }
     } as UserProfile;
     
     setProfile(updatedProfile);
@@ -316,6 +326,55 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     persistState('kwik-kash-logged-payments', updatedLoggedPayments);
   };
 
+  const updateEmergencyFund = (action: 'deposit' | 'withdraw', amount: number, notes?: string) => {
+    if (!profile) return;
+
+    const newEntry: EmergencyFundEntry = {
+        id: Date.now().toString(),
+        amount,
+        date: new Date().toISOString(),
+        type: action === 'deposit' ? 'deposit' : 'withdrawal',
+        notes,
+    };
+
+    const newCurrent = action === 'deposit' 
+        ? profile.emergencyFund.current + amount 
+        : profile.emergencyFund.current - amount;
+
+    const updatedProfile: UserProfile = {
+        ...profile,
+        emergencyFund: {
+            ...profile.emergencyFund,
+            current: newCurrent < 0 ? 0 : newCurrent,
+            history: [newEntry, ...profile.emergencyFund.history],
+        },
+    };
+
+    setProfile(updatedProfile);
+    persistState('kwik-kash-profile', updatedProfile);
+    toast({
+        title: `Fund ${action === 'deposit' ? 'Added' : 'Withdrawn'}`,
+        description: `₹${amount.toFixed(2)} has been ${action === 'deposit' ? 'added to' : 'withdrawn from'} your emergency fund.`,
+    });
+  };
+
+  const setEmergencyFundTarget = (target: number) => {
+    if (!profile) return;
+    const updatedProfile: UserProfile = {
+        ...profile,
+        emergencyFund: {
+            ...profile.emergencyFund,
+            target,
+        },
+    };
+    setProfile(updatedProfile);
+    persistState('kwik-kash-profile', updatedProfile);
+     toast({
+        title: `Target Updated`,
+        description: `Your new emergency fund target is ₹${target.toFixed(2)}.`,
+    });
+  };
+
 
   const logout = async () => {
     const auth = getAuth(firebaseApp);
@@ -351,6 +410,8 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     toggleFixedExpenseLoggedStatus,
     isFixedExpenseLoggedForCurrentMonth,
     getLoggedPaymentCount,
+    updateEmergencyFund,
+    setEmergencyFundTarget,
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
