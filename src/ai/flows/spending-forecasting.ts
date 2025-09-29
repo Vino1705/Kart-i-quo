@@ -1,3 +1,4 @@
+
 'use server';
 
 /**
@@ -12,9 +13,11 @@ import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
 const ForecastSpendingInputSchema = z.object({
-  expensesData: z
-    .string()
-    .describe('Historical expenses data in JSON format.'),
+  expensesData: z.array(z.object({
+      amount: z.number(),
+      category: z.string(),
+      date: z.string(),
+  })).describe('Historical expenses data.'),
   seasonalTrends: z
     .string()
     .describe('Seasonal trends data in JSON format.'),
@@ -24,7 +27,7 @@ export type ForecastSpendingInput = z.infer<typeof ForecastSpendingInputSchema>;
 const ForecastSpendingOutputSchema = z.object({
   predictedLimit: z
     .string()
-    .describe('Predicted daily/weekly spending limit to stay on track.'),
+    .describe('Predicted daily or weekly spending limit to stay on track.'),
   alerts: z.string().describe('Proactive alerts based on spending trends.'),
 });
 export type ForecastSpendingOutput = z.infer<typeof ForecastSpendingOutputSchema>;
@@ -39,7 +42,11 @@ const prompt = ai.definePrompt({
   output: {schema: ForecastSpendingOutputSchema},
   prompt: `You are a personal financial advisor. Analyze the user's past spending and seasonal trends to predict future expense limits and send proactive alerts to help them stay on track with their budget.
 
-Past Spending Data: {{{expensesData}}}
+Past Spending Data:
+{{#each expensesData}}
+- Amount: {{amount}}, Category: {{category}}, Date: {{date}}
+{{/each}}
+
 Seasonal Trends: {{{seasonalTrends}}}
 
 Based on this information, provide:

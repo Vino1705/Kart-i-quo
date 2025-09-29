@@ -31,7 +31,7 @@ export function SpendingForecast() {
 
     try {
       const input: ForecastSpendingInput = {
-        expensesData: JSON.stringify(transactions.map(t => ({ amount: t.amount, category: t.category, date: t.date }))),
+        expensesData: transactions.map(t => ({ amount: t.amount, category: t.category, date: t.date })),
         seasonalTrends: JSON.stringify({ "holidays": "none" }), // Placeholder for now
       };
 
