@@ -79,7 +79,7 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
           <SidebarHeader>
             <div className="flex items-center gap-2">
                 <Logo />
-                <span className="font-bold text-lg">Kwik Kash</span>
+                <span className="font-bold text-lg">Kart-i-quo</span>
             </div>
           </SidebarHeader>
           <SidebarContent>

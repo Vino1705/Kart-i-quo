@@ -3,7 +3,7 @@ import { Toaster } from "@/components/ui/toaster"
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'Kwik Kash',
+  title: 'Kart-i-quo',
   description: 'AI-powered smart budget tracker to master your finances.',
 };
 

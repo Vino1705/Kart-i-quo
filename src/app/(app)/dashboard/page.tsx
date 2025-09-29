@@ -87,7 +87,7 @@ export default function DashboardPage() {
   if (!profile) {
     return (
       <div className="text-center">
-        <h2 className="text-2xl font-bold mb-4">Welcome to Kwik Kash!</h2>
+        <h2 className="text-2xl font-bold mb-4">Welcome to Kart-i-quo!</h2>
         <p className="text-muted-foreground mb-6">Please complete the onboarding to start managing your finances.</p>
         <Button asChild>
           <Link href="/onboarding">Start Onboarding</Link>
@@ -253,5 +253,3 @@ export default function DashboardPage() {
     </div>
   );
 }
-
-    

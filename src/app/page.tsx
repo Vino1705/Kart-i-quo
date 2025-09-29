@@ -38,7 +38,7 @@ export default function LandingPage() {
         <div className="container flex h-14 items-center">
           <Link href="/" className="mr-6 flex items-center space-x-2">
             <Logo />
-            <span className="font-bold">Kwik Kash</span>
+            <span className="font-bold">Kart-i-quo</span>
           </Link>
           <div className="flex flex-1 items-center justify-end space-x-4">
             <nav className="flex items-center space-x-2">
@@ -62,7 +62,7 @@ export default function LandingPage() {
                 Effortlessly.
               </h1>
               <p className="max-w-[700px] text-lg text-muted-foreground sm:text-xl">
-                Kwik Kash is your AI-powered financial coach. We help you set goals, track spending, and build wealth with proactive, personalized advice. No more passive tracking, only active planning.
+                Kart-i-quo is your AI-powered financial coach. We help you set goals, track spending, and build wealth with proactive, personalized advice. No more passive tracking, only active planning.
               </p>
               <div className="flex gap-4">
                 <Button size="lg" asChild>
@@ -92,7 +92,7 @@ export default function LandingPage() {
                 Your Personal Financial Coach
               </h2>
               <p className="mt-4 text-lg text-muted-foreground">
-                Kwik Kash provides the tools you need to take control of your finances.
+                Kart-i-quo provides the tools you need to take control of your finances.
               </p>
             </div>
             <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4">
@@ -117,7 +117,7 @@ export default function LandingPage() {
            <div className="mx-auto max-w-4xl rounded-lg bg-primary p-8 text-center text-primary-foreground md:p-12">
             <h2 className="text-3xl font-bold md:text-4xl font-headline">Ready to transform your financial future?</h2>
             <p className="mt-4 text-lg text-primary-foreground/80">
-              Join Kwik Kash today and start your journey towards financial freedom.
+              Join Kart-i-quo today and start your journey towards financial freedom.
             </p>
             <Button variant="secondary" size="lg" className="mt-8" asChild>
               <Link href="/signup">Sign Up Now</Link>
@@ -132,7 +132,7 @@ export default function LandingPage() {
           <div className="flex flex-col items-center gap-4 px-8 md:flex-row md:gap-2 md:px-0">
             <Logo />
             <p className="text-center text-sm leading-loose md:text-left">
-              © {new Date().getFullYear()} Kwik Kash. All rights reserved.
+              © {new Date().getFullYear()} Kart-i-quo. All rights reserved.
             </p>
           </div>
           <p className="text-center text-sm text-muted-foreground">

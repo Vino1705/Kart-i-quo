@@ -53,7 +53,7 @@ export default function SignupPage() {
       <CardHeader className="text-center">
         <Logo className="mx-auto h-10 w-10" />
         <CardTitle className="mt-4 font-headline">Create an Account</CardTitle>
-        <CardDescription>Get started with Kwik Kash for free</CardDescription>
+        <CardDescription>Get started with Kart-i-quo for free</CardDescription>
       </CardHeader>
       <CardContent>
         <Form {...form}>

@@ -13,14 +13,14 @@ const pageTitles: { [key: string]: string } = {
   '/expenses': 'Expense Analysis',
   '/fixed-expenses': 'Fixed Expenses Analysis',
   '/emergency-fund': 'Emergency Fund',
-  '/onboarding': 'Welcome to Kwik Kash',
+  '/onboarding': 'Welcome to Kart-i-quo',
   '/settings': 'Profile Settings',
 };
 
 export function DashboardHeader() {
   const pathname = usePathname();
   const { profile } = useApp();
-  const title = pageTitles[pathname] || 'Kwik Kash';
+  const title = pageTitles[pathname] || 'Kart-i-quo';
 
   const getInitials = (role: string | undefined) => {
     if (!role) return 'U';

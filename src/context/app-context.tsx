@@ -63,10 +63,10 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     // Attempt to load data from localStorage to persist state
     try {
-      const storedProfile = localStorage.getItem('kwik-kash-profile');
-      const storedGoals = localStorage.getItem('kwik-kash-goals');
-      const storedTransactions = localStorage.getItem('kwik-kash-transactions');
-      const storedLoggedPayments = localStorage.getItem('kwik-kash-logged-payments');
+      const storedProfile = localStorage.getItem('kart-i-quo-profile');
+      const storedGoals = localStorage.getItem('kart-i-quo-goals');
+      const storedTransactions = localStorage.getItem('kart-i-quo-transactions');
+      const storedLoggedPayments = localStorage.getItem('kart-i-quo-logged-payments');
 
       if (storedProfile) {
         let parsedProfile: UserProfile = JSON.parse(storedProfile);
@@ -83,7 +83,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         const updatedProfile = { ...parsedProfile, ...budget };
 
         if (JSON.stringify(parsedProfile) !== JSON.stringify(updatedProfile)) {
-          persistState('kwik-kash-profile', updatedProfile);
+          persistState('kart-i-quo-profile', updatedProfile);
         }
         setProfile(updatedProfile);
 
@@ -107,7 +107,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
           contributions: [initialContribution],
         };
         setGoals([initialGoal]);
-        persistState('kwik-kash-goals', [initialGoal]);
+        persistState('kart-i-quo-goals', [initialGoal]);
       }
       if (storedTransactions) {
         setTransactions(JSON.parse(storedTransactions));
@@ -120,7 +120,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
           date: new Date().toISOString()
         };
         setTransactions([initialTransaction]);
-        persistState('kwik-kash-transactions', [initialTransaction]);
+        persistState('kart-i-quo-transactions', [initialTransaction]);
       }
       if (storedLoggedPayments) {
         setLoggedPayments(JSON.parse(storedLoggedPayments));
@@ -159,7 +159,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     
     setProfile(updatedProfile);
     setOnboardingComplete(true);
-    persistState('kwik-kash-profile', updatedProfile);
+    persistState('kart-i-quo-profile', updatedProfile);
   };
 
   const addGoal = (goalData: Omit<Goal, 'id' | 'currentAmount' | 'contributions'>) => {
@@ -172,7 +172,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     };
     const newGoals = [...goals, newGoal];
     setGoals(newGoals);
-    persistState('kwik-kash-goals', newGoals);
+    persistState('kart-i-quo-goals', newGoals);
     toast({
       title: 'Goal Added!',
       description: `You're now saving for "${newGoal.name}".`,
@@ -187,7 +187,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     };
     const newTransactions = [newTransaction, ...transactions];
     setTransactions(newTransactions);
-    persistState('kwik-kash-transactions', newTransactions);
+    persistState('kart-i-quo-transactions', newTransactions);
   };
 
   const updateGoal = (goalId: string, updatedData: Partial<Omit<Goal, 'id'>>) => {
@@ -195,7 +195,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         g.id === goalId ? { ...g, ...updatedData, startDate: (g.timelineMonths && !g.startDate) ? formatISO(new Date()) : g.startDate } : g
     );
     setGoals(newGoals);
-    persistState('kwik-kash-goals', newGoals);
+    persistState('kart-i-quo-goals', newGoals);
     toast({
         title: 'Goal Updated',
         description: 'Your goal has been successfully updated.',
@@ -207,7 +207,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       t.id === transactionId ? { ...t, ...updatedData } : t
     );
     setTransactions(newTransactions);
-    persistState('kwik-kash-transactions', newTransactions);
+    persistState('kart-i-quo-transactions', newTransactions);
     toast({
         title: 'Transaction Updated',
         description: 'Your expense has been successfully updated.',
@@ -217,7 +217,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   const deleteTransaction = (transactionId: string) => {
     const newTransactions = transactions.filter(t => t.id !== transactionId);
     setTransactions(newTransactions);
-    persistState('kwik-kash-transactions', newTransactions);
+    persistState('kart-i-quo-transactions', newTransactions);
     toast({
         title: 'Transaction Deleted',
         description: 'Your expense has been removed.',
@@ -284,7 +284,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       return goal;
     });
     setGoals(newGoals);
-    persistState('kwik-kash-goals', newGoals);
+    persistState('kart-i-quo-goals', newGoals);
     toast({
       title: 'Contribution Successful!',
       description: `You've added ₹${amount.toFixed(2)} to your goal.`,
@@ -320,7 +320,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     };
     
     setLoggedPayments(updatedLoggedPayments);
-    persistState('kwik-kash-logged-payments', updatedLoggedPayments);
+    persistState('kart-i-quo-logged-payments', updatedLoggedPayments);
   };
 
   const updateEmergencyFund = (action: 'deposit' | 'withdraw', amount: number, notes?: string) => {
@@ -348,7 +348,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     };
 
     setProfile(updatedProfile);
-    persistState('kwik-kash-profile', updatedProfile);
+    persistState('kart-i-quo-profile', updatedProfile);
     toast({
         title: `Fund ${action === 'deposit' ? 'Added' : 'Withdrawn'}`,
         description: `₹${amount.toFixed(2)} has been ${action === 'deposit' ? 'added to' : 'withdrawn from'} your emergency fund.`,
@@ -365,7 +365,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         },
     };
     setProfile(updatedProfile);
-    persistState('kwik-kash-profile', updatedProfile);
+    persistState('kart-i-quo-profile', updatedProfile);
      toast({
         title: `Target Updated`,
         description: `Your new emergency fund target is ₹${target.toFixed(2)}.`,
@@ -413,5 +413,3 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 }
-
-    

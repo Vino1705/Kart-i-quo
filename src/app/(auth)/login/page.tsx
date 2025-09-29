@@ -53,7 +53,7 @@ export default function LoginPage() {
       <CardHeader className="text-center">
         <Logo className="mx-auto h-10 w-10" />
         <CardTitle className="mt-4 font-headline">Welcome Back!</CardTitle>
-        <CardDescription>Sign in to continue to Kwik Kash</CardDescription>
+        <CardDescription>Sign in to continue to Kart-i-quo</CardDescription>
       </CardHeader>
       <CardContent>
         <Form {...form}>

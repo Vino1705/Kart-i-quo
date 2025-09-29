@@ -40,7 +40,7 @@ const prompt = ai.definePrompt({
   name: 'spendingAlertsPrompt',
   input: {schema: SpendingAlertsInputSchema},
   output: {schema: SpendingAlertsOutputSchema},
-  prompt: `You are Kwik Kash's proactive financial analyst. Your job is to analyze a user's spending habits and provide a concise, actionable suggestion for the next week.
+  prompt: `You are Kart-i-quo's proactive financial analyst. Your job is to analyze a user's spending habits and provide a concise, actionable suggestion for the next week.
 
 ## User's Financial Profile:
 - **Monthly Income:** ₹{{{income}}}
@@ -90,6 +90,3 @@ const spendingAlertsFlow = ai.defineFlow(
     }
   }
 );
-
-
-

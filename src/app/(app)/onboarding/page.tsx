@@ -104,7 +104,7 @@ export default function OnboardingPage() {
     <div className="flex items-center justify-center min-h-screen bg-background p-4">
       <Card className="w-full max-w-4xl">
         <CardHeader>
-          <CardTitle className="text-2xl font-headline">Welcome to Kwik Kash!</CardTitle>
+          <CardTitle className="text-2xl font-headline">Welcome to Kart-i-quo!</CardTitle>
           <CardDescription>Let's set up your financial profile to tailor your experience.</CardDescription>
         </CardHeader>
         <CardContent>
@@ -312,5 +312,3 @@ export default function OnboardingPage() {
     </div>
   );
 }
-
-    
