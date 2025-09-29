@@ -19,6 +19,7 @@ import { Pencil, PieChart, Trash2 } from 'lucide-react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { EndOfDaySummary } from '@/components/end-of-day-summary';
 import { Cell, Legend, Pie, PieChart as RechartsPieChart, ResponsiveContainer, Tooltip } from 'recharts';
+import { useToast } from '@/hooks/use-toast';
 
 const expenseSchema = z.object({
   id: z.string().optional(),
@@ -41,6 +42,7 @@ export default function CheckInPage() {
   const { profile, addTransaction, getTodaysSpending, transactions, updateTransaction, deleteTransaction } = useApp();
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
+  const { toast } = useToast();
 
   const form = useForm<ExpenseValues>({
     resolver: zodResolver(expenseSchema),
@@ -79,6 +81,14 @@ export default function CheckInPage() {
   function onSubmit(data: ExpenseValues) {
     addTransaction(data);
     form.reset({ amount: 0, category: '', description: ''});
+    
+    if (profile && (todaysSpending + data.amount) > profile.dailySpendingLimit) {
+        toast({
+            variant: "destructive",
+            title: 'Daily Limit Exceeded!',
+            description: `You've spent ₹${(todaysSpending + data.amount).toFixed(2)} today, which is over your ₹${profile.dailySpendingLimit.toFixed(2)} limit.`,
+        });
+    }
   }
 
   function onEditSubmit(data: ExpenseValues) {
@@ -366,5 +376,3 @@ export default function CheckInPage() {
     </>
   );
 }
-
-    

@@ -8,7 +8,7 @@ import { Pie, PieChart, ResponsiveContainer, Cell, Legend, Tooltip } from 'recha
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Info, Target, CheckCircle } from 'lucide-react';
+import { Info, Target, CheckCircle, RotateCcw } from 'lucide-react';
 import { isAfter, addMonths, format, differenceInMonths } from 'date-fns';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
@@ -22,7 +22,7 @@ const COLORS = [
 ];
 
 export default function FixedExpensesPage() {
-  const { profile, logFixedExpenseAsTransaction, getLoggedFixedExpensesForMonth } = useApp();
+  const { profile, toggleFixedExpenseLoggedStatus, getLoggedFixedExpensesForMonth } = useApp();
   const fixedExpenses = profile?.fixedExpenses || [];
   
   const loggedExpenseIds = getLoggedFixedExpensesForMonth();
@@ -73,7 +73,7 @@ export default function FixedExpensesPage() {
       <Card>
         <CardHeader>
           <CardTitle>Log Payments</CardTitle>
-          <CardDescription>Log your fixed expenses as transactions for this month ({format(new Date(), 'MMMM yyyy')}).</CardDescription>
+          <CardDescription>Check off your fixed expenses as you pay them for this month ({format(new Date(), 'MMMM yyyy')}). This is for your records only and won't affect your budget.</CardDescription>
         </CardHeader>
         <CardContent>
            {fixedExpenses.length > 0 ? (
@@ -97,16 +97,19 @@ export default function FixedExpensesPage() {
                         <TableCell className="text-right">
                           <Button
                             size="sm"
-                            onClick={() => logFixedExpenseAsTransaction(exp)}
-                            disabled={isLogged}
+                            variant={isLogged ? 'outline' : 'default'}
+                            onClick={() => toggleFixedExpenseLoggedStatus(exp.id)}
                           >
                             {isLogged ? (
                               <>
-                                <CheckCircle className="mr-2 h-4 w-4" />
-                                Logged
+                                <RotateCcw className="mr-2 h-4 w-4" />
+                                Mark as Unpaid
                               </>
                             ) : (
-                              'Log as Paid'
+                               <>
+                                <CheckCircle className="mr-2 h-4 w-4" />
+                                Mark as Paid
+                               </>
                             )}
                           </Button>
                         </TableCell>

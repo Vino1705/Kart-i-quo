@@ -25,7 +25,7 @@ interface AppContextType {
   getTotalGoalContributions: () => number;
   contributeToGoal: (goalId: string, amount: number) => void;
   getCumulativeDailySavings: () => number;
-  logFixedExpenseAsTransaction: (expense: FixedExpense) => void;
+  toggleFixedExpenseLoggedStatus: (expenseId: string) => void;
   getLoggedFixedExpensesForMonth: () => string[];
 }
 
@@ -176,18 +176,6 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     const newTransactions = [newTransaction, ...transactions];
     setTransactions(newTransactions);
     persistState('kwik-kash-transactions', newTransactions);
-
-    // Only show toast for non-fixed expenses
-    if (!newTransaction.isFixedExpense) {
-      const todaysSpending = getTodaysSpending() + newTransaction.amount;
-      if (profile && todaysSpending > profile.dailySpendingLimit) {
-          toast({
-              variant: "destructive",
-              title: 'Daily Limit Exceeded!',
-              description: `You've spent ₹${todaysSpending.toFixed(2)} today, which is over your ₹${profile.dailySpendingLimit.toFixed(2)} limit.`,
-          });
-      }
-    }
   };
 
   const updateGoal = (goalId: string, updatedData: Partial<Omit<Goal, 'id'>>) => {
@@ -227,7 +215,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   const getTodaysSpending = () => {
     const today = new Date().toISOString().split('T')[0];
     return transactions
-      .filter(t => t.date.startsWith(today) && !t.isFixedExpense)
+      .filter(t => t.date.startsWith(today))
       .reduce((sum, t) => sum + t.amount, 0);
   };
 
@@ -241,7 +229,6 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     }
 
     const spendingByDay = transactions
-      .filter(t => !t.isFixedExpense)
       .reduce((acc, t) => {
         const day = startOfDay(parseISO(t.date)).toISOString();
         if (!acc[day]) {
@@ -289,39 +276,28 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     return loggedFixedExpenses[currentMonthKey] || [];
   };
 
-  const logFixedExpenseAsTransaction = (expense: FixedExpense) => {
+  const toggleFixedExpenseLoggedStatus = (expenseId: string) => {
     const currentMonthKey = format(new Date(), 'yyyy-MM');
-    const alreadyLogged = (loggedFixedExpenses[currentMonthKey] || []).includes(expense.id);
+    const monthlyLogs = loggedFixedExpenses[currentMonthKey] || [];
+    const isLogged = monthlyLogs.includes(expenseId);
 
-    if (alreadyLogged) {
-        toast({
-            variant: 'destructive',
-            title: 'Already Logged',
-            description: `This expense has already been logged for ${format(new Date(), 'MMMM')}.`,
-        });
-        return;
+    let newMonthlyLogs;
+    if (isLogged) {
+      newMonthlyLogs = monthlyLogs.filter(id => id !== expenseId);
+      toast({ title: 'Expense marked as unpaid.' });
+    } else {
+      newMonthlyLogs = [...monthlyLogs, expenseId];
+      toast({ title: 'Expense marked as paid.' });
     }
-    
-    addTransaction({
-        amount: expense.amount,
-        category: expense.category,
-        description: `Fixed Expense: ${expense.name}`,
-        isFixedExpense: true,
-    });
 
     const updatedLoggedExpenses = {
-        ...loggedFixedExpenses,
-        [currentMonthKey]: [...(loggedFixedExpenses[currentMonthKey] || []), expense.id],
+      ...loggedFixedExpenses,
+      [currentMonthKey]: newMonthlyLogs,
     };
-
+    
     setLoggedFixedExpenses(updatedLoggedExpenses);
     persistState('kwik-kash-logged-fixed', updatedLoggedExpenses);
-
-    toast({
-        title: 'Expense Logged',
-        description: `${expense.name} has been added to your transactions for this month.`,
-    });
-  };
+  }
 
   const logout = async () => {
     const auth = getAuth(firebaseApp);
@@ -353,8 +329,8 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     deleteTransaction,
     getTotalGoalContributions,
     contributeToGoal,
-getCumulativeDailySavings,
-    logFixedExpenseAsTransaction,
+    getCumulativeDailySavings,
+    toggleFixedExpenseLoggedStatus,
     getLoggedFixedExpensesForMonth,
   };
 
