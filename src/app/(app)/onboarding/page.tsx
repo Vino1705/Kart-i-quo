@@ -194,7 +194,7 @@ export default function OnboardingPage() {
                                     <FormControl>
                                         <SelectTrigger>
                                             <SelectValue placeholder="Category" />
-                                        </Trigger>
+                                        </SelectTrigger>
                                     </FormControl>
                                     <SelectContent>
                                         {expenseCategories.map(cat => (
