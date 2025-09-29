@@ -155,7 +155,7 @@ export default function SettingsPage() {
                                     <FormControl>
                                         <SelectTrigger>
                                             <SelectValue placeholder="Category" />
-                                        </Trigger>
+                                        </SelectTrigger>
                                     </FormControl>
                                     <SelectContent>
                                         {expenseCategories.map(cat => (
@@ -259,3 +259,5 @@ export default function SettingsPage() {
     </Card>
   );
 }
+
+    
