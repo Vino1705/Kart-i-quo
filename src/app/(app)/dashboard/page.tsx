@@ -11,10 +11,9 @@ import { useApp } from '@/hooks/use-app';
 import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip } from 'recharts';
 import { SpendingForecast } from '@/components/spending-forecast';
 
-function StatCard({ title, value, icon, change, changeType, asChild }: { title: string, value: string, icon: React.ReactNode, change?: string, changeType?: 'increase' | 'decrease', asChild?: boolean }) {
-  const Comp = asChild ? 'div' : Card;
+function StatCard({ title, value, icon, change, changeType }: { title: string, value: string, icon: React.ReactNode, change?: string, changeType?: 'increase' | 'decrease' }) {
   return (
-    <Comp>
+    <Card>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="text-sm font-medium">{title}</CardTitle>
         {icon}
@@ -28,7 +27,7 @@ function StatCard({ title, value, icon, change, changeType, asChild }: { title: 
           </p>
         )}
       </CardContent>
-    </Comp>
+    </Card>
   );
 }
 
@@ -132,20 +131,23 @@ export default function DashboardPage() {
             <CardTitle>Financial Breakdown</CardTitle>
             <CardDescription>Your monthly budget allocated across Needs, Wants, and Savings.</CardDescription>
             </CardHeader>
-            <CardContent className="grid gap-4 md:grid-cols-2">
-                <StatCard
-                    title="Needs"
-                    value={`₹${monthlyNeeds.toFixed(2)}`}
-                    icon={<Wallet className="h-5 w-5 text-primary" />}
-                    change={`Your total fixed costs.`}
-                />
-                <StatCard
-                    title="Wants"
-                    value={`₹${monthlyWants.toFixed(2)}`}
-                    icon={<ShoppingCart className="h-5 w-5 text-accent" />}
-                    change={`≈ ₹${dailySpendingLimit.toFixed(2)} / day for spending`}
-                />
-                <Card className="md:col-span-2">
+            <CardContent className="grid gap-4 md:grid-cols-3">
+                <div className="p-4 rounded-lg bg-muted flex flex-col justify-center items-center">
+                    <Wallet className="h-6 w-6 text-primary mb-2" />
+                    <p className="text-sm text-muted-foreground">Needs</p>
+                    <p className="text-lg font-bold">₹{monthlyNeeds.toFixed(2)}</p>
+                </div>
+                 <div className="p-4 rounded-lg bg-muted flex flex-col justify-center items-center">
+                    <ShoppingCart className="h-6 w-6 text-accent mb-2" />
+                    <p className="text-sm text-muted-foreground">Wants</p>
+                    <p className="text-lg font-bold">₹{monthlyWants.toFixed(2)}</p>
+                </div>
+                 <div className="p-4 rounded-lg bg-muted flex flex-col justify-center items-center">
+                    <PiggyBank className="h-6 w-6 text-green-500 mb-2" />
+                    <p className="text-sm text-muted-foreground">Savings</p>
+                    <p className="text-lg font-bold">₹{monthlySavings.toFixed(2)}</p>
+                </div>
+                <Card className="md:col-span-3">
                     <CardHeader className="pb-2">
                         <CardTitle className="text-sm font-medium">Monthly Savings Allocation</CardTitle>
                     </CardHeader>
@@ -158,7 +160,7 @@ export default function DashboardPage() {
                             <span className="flex items-center gap-2 text-muted-foreground"><ShieldCheck className="h-4 w-4" /> Available for Emergency Fund</span>
                             <span className="font-semibold">₹{Math.max(0, monthlySavings - goalContributions).toFixed(2)}</span>
                         </div>
-                        <div className="flex justify-between items-center text-base font-bold pt-2 border-t">
+                        <div className="flex justify-between items-center text-base font-bold pt-2 border-t mt-2">
                             <span>Total Monthly Savings</span>
                             <span>₹{monthlySavings.toFixed(2)}</span>
                         </div>
@@ -167,28 +169,24 @@ export default function DashboardPage() {
             </CardContent>
         </Card>
          <Link href="/emergency-fund" className="block">
-          <Card className="h-full hover:border-primary/50 transition-colors">
+          <Card className="h-full hover:border-primary/50 transition-colors flex flex-col">
             <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                     <ShieldAlert className="h-5 w-5 text-primary" />
                     Emergency Fund
                 </CardTitle>
                  <CardDescription>
-                    Your safety net for unexpected events.
+                    Your safety net for unexpected events. Current balance:
                 </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-                 <div>
-                    <div className="flex justify-between mb-1">
-                    <span className="text-sm font-medium">Progress</span>
-                    <span className="text-sm text-muted-foreground">
-                        ₹{(emergencyFund?.current || 0).toFixed(2)} / ₹{(emergencyFund?.target || 0).toFixed(2)}
-                    </span>
-                    </div>
-                    <Progress value={emergencyFundProgress} />
-                </div>
-                 <Button className="w-full" variant="secondary">Manage Fund</Button>
+            <CardContent className="flex-1 flex flex-col justify-center items-center">
+                 <div className="text-4xl font-bold">
+                    ₹{(emergencyFund?.current || 0).toFixed(2)}
+                 </div>
             </CardContent>
+            <CardFooter>
+                 <Button className="w-full" variant="secondary">Manage Fund</Button>
+            </CardFooter>
           </Card>
         </Link>
       </div>
@@ -255,3 +253,5 @@ export default function DashboardPage() {
     </div>
   );
 }
+
+    

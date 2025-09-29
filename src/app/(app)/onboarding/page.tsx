@@ -91,7 +91,7 @@ export default function OnboardingPage() {
     const profileData = {
         ...data,
         emergencyFund: {
-            target: (data.income || 0) * 3, // Set initial target to 3x income
+            target: 0, 
             current: 0,
             history: [],
         }
@@ -287,9 +287,9 @@ export default function OnboardingPage() {
                     <SummaryCard title="Savings" amount={monthlySavings} icon={<PiggyBank className="h-5 w-5 text-green-500" />} description="For goals & emergencies." />
                      <Alert>
                         <ShieldAlert className="h-4 w-4" />
-                        <AlertTitle>Emergency Fund Target</AlertTitle>
+                        <AlertTitle>Emergency Fund</AlertTitle>
                         <AlertDescription>
-                        We'll set an initial emergency fund goal of 3x your monthly income, which is <strong>₹{(watchedIncome * 3).toFixed(2)}</strong>. You can change this later.
+                        You can set a target and contribute to your emergency fund from the dedicated 'Emergency Fund' page after setup.
                         </AlertDescription>
                     </Alert>
                   </CardContent>
@@ -312,3 +312,5 @@ export default function OnboardingPage() {
     </div>
   );
 }
+
+    

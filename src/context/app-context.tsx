@@ -71,15 +71,13 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       if (storedProfile) {
         let parsedProfile: UserProfile = JSON.parse(storedProfile);
         
-        // --- Emergency Fund Migration ---
         if (!parsedProfile.emergencyFund) {
             parsedProfile.emergencyFund = {
-                target: (parsedProfile.income || 0) * 3, // Default to 3x monthly income
+                target: 0,
                 current: 0,
                 history: [],
             };
         }
-        // --- End Migration ---
         
         const budget = calculateBudget(parsedProfile.income, parsedProfile.fixedExpenses);
         const updatedProfile = { ...parsedProfile, ...budget };
@@ -156,7 +154,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         ...newProfileData,
         fixedExpenses,
         ...budget,
-        emergencyFund: profile?.emergencyFund || { target: income * 3, current: 0, history: [] }
+        emergencyFund: profile?.emergencyFund || { target: 0, current: 0, history: [] }
     } as UserProfile;
     
     setProfile(updatedProfile);
@@ -256,7 +254,6 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
 
     let cumulativeSavings = 0;
     for (const day in spendingByDay) {
-      // Do not include today's savings in the cumulative total, as it's still ongoing
       if (day !== today) {
         const spending = spendingByDay[day];
         const saving = profile.dailySpendingLimit - spending;
@@ -416,3 +413,5 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 }
+
+    
