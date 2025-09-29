@@ -50,3 +50,5 @@ export const expenseCategories = [
   'Education',
   'Other',
 ];
+
+    
