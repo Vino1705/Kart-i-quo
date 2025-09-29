@@ -31,6 +31,7 @@ const fixedExpenseSchema = z.object({
 });
 
 const onboardingSchema = z.object({
+  name: z.string().min(1, 'Please enter your name'),
   role: z.enum(['Student', 'Professional', 'Housewife']),
   income: z.coerce.number().min(0, 'Income cannot be negative'),
   fixedExpenses: z.array(fixedExpenseSchema).optional(),
@@ -59,6 +60,7 @@ export default function OnboardingPage() {
   const form = useForm<OnboardingValues>({
     resolver: zodResolver(onboardingSchema),
     defaultValues: {
+      name: '',
       income: 0,
       fixedExpenses: [],
     },
@@ -113,6 +115,32 @@ export default function OnboardingPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <FormField
                   control={form.control}
+                  name="name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Full Name</FormLabel>
+                      <FormControl>
+                        <Input placeholder="e.g., John Doe" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                 <FormField
+                  control={form.control}
+                  name="income"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Monthly Income (₹)</FormLabel>
+                      <FormControl>
+                        <Input type="number" placeholder="e.g., 50000" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                 <FormField
+                  control={form.control}
                   name="role"
                   render={({ field }) => (
                     <FormItem>
@@ -129,19 +157,6 @@ export default function OnboardingPage() {
                           <SelectItem value="Housewife">Housewife</SelectItem>
                         </SelectContent>
                       </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="income"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Monthly Income (₹)</FormLabel>
-                      <FormControl>
-                        <Input type="number" placeholder="e.g., 50000" {...field} />
-                      </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -312,3 +327,5 @@ export default function OnboardingPage() {
     </div>
   );
 }
+
+    

@@ -2,6 +2,7 @@
 export type UserRole = 'Student' | 'Professional' | 'Housewife' | '';
 
 export interface UserProfile {
+  name?: string;
   role: UserRole;
   income: number;
   fixedExpenses: FixedExpense[];

@@ -20,14 +20,23 @@ const pageTitles: { [key: string]: string } = {
 export function DashboardHeader() {
   const pathname = usePathname();
   const { profile, user } = useApp();
-  const title = pageTitles[pathname] || 'Kart-i-quo';
+  
+  const title = (profile?.name && pathname === '/dashboard')
+    ? `Hello, ${profile.name.split(' ')[0]}!`
+    : pageTitles[pathname] || 'Kart-i-quo';
 
-  const getInitials = (emailOrRole: string | undefined) => {
-    if (!emailOrRole) return 'U';
-    return emailOrRole.charAt(0).toUpperCase();
+  const getInitials = (emailOrName: string | undefined) => {
+    if (!emailOrName) return 'U';
+    // If it's a name with spaces, use initials of first/last name
+    if (emailOrName.includes(' ')) {
+        const parts = emailOrName.split(' ');
+        return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
+    }
+    // Otherwise, use the first letter (for email or single name)
+    return emailOrName.charAt(0).toUpperCase();
   }
   
-  const avatarIdentifier = user?.email || profile?.role || 'user';
+  const avatarIdentifier = profile?.name || user?.email || 'user';
 
   return (
     <header className="sticky top-0 z-10 flex h-16 items-center gap-4 border-b bg-background px-4 md:px-6">
