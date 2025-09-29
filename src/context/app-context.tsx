@@ -21,6 +21,7 @@ interface AppContextType {
   updateGoal: (goalId: string, updatedGoal: Partial<Omit<Goal, 'id'>>) => void;
   getTodaysSpending: () => number;
   logout: () => void;
+  deleteAccount: () => void;
   updateTransaction: (transactionId: string, updatedTransaction: Partial<Omit<Transaction, 'id' | 'date'>>) => void;
   deleteTransaction: (transactionId: string) => void;
   getTotalGoalContributions: () => number;
@@ -387,7 +388,38 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         description: "An error occurred while logging out. Please try again.",
        })
     }
-  }
+  };
+
+  const deleteAccount = async () => {
+    try {
+        localStorage.removeItem(PROFILE_KEY);
+        localStorage.removeItem(GOALS_KEY);
+        localStorage.removeItem(TRANSACTIONS_KEY);
+        localStorage.removeItem(LOGGED_PAYMENTS_KEY);
+
+        const auth = getAuth(firebaseApp);
+        if (auth.currentUser) {
+            // Note: Deleting user from Firebase Auth is a sensitive operation
+            // and requires re-authentication. For this client-side implementation,
+            // we will just sign them out and clear local data.
+            await signOut(auth);
+        }
+
+        toast({
+            title: "Account Deleted",
+            description: "Your account and all data have been successfully deleted.",
+        });
+
+        router.push('/signup');
+    } catch (error) {
+        console.error("Account deletion failed", error);
+        toast({
+            variant: "destructive",
+            title: "Deletion Failed",
+            description: "An error occurred while deleting your account. Please try again.",
+        });
+    }
+  };
 
   const value: AppContextType = {
     user,
@@ -401,11 +433,12 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     updateGoal,
     getTodaysSpending,
     logout,
+    deleteAccount,
     updateTransaction,
     deleteTransaction,
     getTotalGoalContributions,
     contributeToGoal,
-getCumulativeDailySavings,
+    getCumulativeDailySavings,
     toggleFixedExpenseLoggedStatus,
     isFixedExpenseLoggedForCurrentMonth,
     getLoggedPaymentCount,
