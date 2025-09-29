@@ -7,7 +7,7 @@ import { useToast } from '@/hooks/use-toast';
 import { getAuth, signOut } from 'firebase/auth';
 import firebaseApp from '@/lib/firebase';
 import { useRouter } from 'next/navigation';
-import { formatISO } from 'date-fns';
+import { formatISO, startOfDay, parseISO } from 'date-fns';
 
 interface AppContextType {
   profile: UserProfile | null;
@@ -24,6 +24,7 @@ interface AppContextType {
   deleteTransaction: (transactionId: string) => void;
   getTotalGoalContributions: () => number;
   contributeToGoal: (goalId: string, amount: number) => void;
+  getCumulativeDailySavings: () => number;
 }
 
 export const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -224,6 +225,37 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     return goals.reduce((sum, g) => sum + g.monthlyContribution, 0);
   }
 
+  const getCumulativeDailySavings = () => {
+    if (!profile || transactions.length === 0) {
+      return 0;
+    }
+
+    const spendingByDay = transactions.reduce((acc, t) => {
+      const day = startOfDay(parseISO(t.date)).toISOString();
+      if (!acc[day]) {
+        acc[day] = 0;
+      }
+      acc[day] += t.amount;
+      return acc;
+    }, {} as { [key: string]: number });
+    
+    const today = startOfDay(new Date()).toISOString();
+
+    let cumulativeSavings = 0;
+    for (const day in spendingByDay) {
+      // Do not include today's savings in the cumulative total, as it's still ongoing
+      if (day !== today) {
+        const spending = spendingByDay[day];
+        const saving = profile.dailySpendingLimit - spending;
+        if (saving > 0) {
+            cumulativeSavings += saving;
+        }
+      }
+    }
+
+    return cumulativeSavings;
+  };
+
   const contributeToGoal = (goalId: string, amount: number) => {
     const newGoals = goals.map(goal => {
       if (goal.id === goalId) {
@@ -244,10 +276,8 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     const auth = getAuth(firebaseApp);
     try {
       await signOut(auth);
-      // Clear sensitive session state, but keep persisted data in localStorage
+      // Only clear session state, not persisted data
       setProfile(null);
-      setGoals([]);
-      setTransactions([]);
       setOnboardingComplete(false);
       router.push('/login');
     } catch (error) {
@@ -275,8 +305,8 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     deleteTransaction,
     getTotalGoalContributions,
     contributeToGoal,
+    getCumulativeDailySavings,
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
-
-    
+}

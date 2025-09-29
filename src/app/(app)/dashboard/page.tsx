@@ -32,7 +32,7 @@ function StatCard({ title, value, icon, change, changeType }: { title: string, v
 }
 
 export default function DashboardPage() {
-  const { profile, goals, transactions, getTodaysSpending, getTotalGoalContributions } = useApp();
+  const { profile, goals, transactions, getTodaysSpending, getTotalGoalContributions, getCumulativeDailySavings } = useApp();
 
   const totalGoalTarget = goals.reduce((sum, g) => sum + g.targetAmount, 0);
   const totalGoalSaved = goals.reduce((sum, g) => sum + g.currentAmount, 0);
@@ -81,7 +81,9 @@ export default function DashboardPage() {
     };
   }, [profile, getTotalGoalContributions]);
   
-  const dailySavings = dailySpendingLimit - todaysSpending;
+  const todaysSavings = dailySpendingLimit - todaysSpending;
+  const cumulativeSavings = getCumulativeDailySavings();
+
 
   if (!profile) {
     return (
@@ -111,11 +113,11 @@ export default function DashboardPage() {
           changeType={income > overallSpending ? 'increase' : 'decrease'}
         />
         <StatCard
-          title="Daily Savings"
-          value={`₹${(dailySavings > 0 ? dailySavings : 0).toFixed(2)}`}
+          title="Total Daily Savings"
+          value={`₹${(cumulativeSavings).toFixed(2)}`}
           icon={<PiggyBank className="h-4 w-4 text-muted-foreground" />}
-          change={dailySavings >= 0 ? "On track today" : "Over budget"}
-          changeType={dailySavings >= 0 ? "increase" : "decrease"}
+          change={todaysSavings >= 0 ? `+ ₹${todaysSavings.toFixed(2)} today` : `- ₹${Math.abs(todaysSavings).toFixed(2)} today`}
+          changeType={todaysSavings >= 0 ? "increase" : "decrease"}
         />
         <StatCard 
           title="Total Goal Savings" 
