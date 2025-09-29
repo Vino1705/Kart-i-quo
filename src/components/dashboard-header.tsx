@@ -19,21 +19,23 @@ const pageTitles: { [key: string]: string } = {
 
 export function DashboardHeader() {
   const pathname = usePathname();
-  const { profile } = useApp();
+  const { profile, user } = useApp();
   const title = pageTitles[pathname] || 'Kart-i-quo';
 
-  const getInitials = (role: string | undefined) => {
-    if (!role) return 'U';
-    return role.charAt(0).toUpperCase();
+  const getInitials = (emailOrRole: string | undefined) => {
+    if (!emailOrRole) return 'U';
+    return emailOrRole.charAt(0).toUpperCase();
   }
+  
+  const avatarIdentifier = user?.email || profile?.role || 'user';
 
   return (
     <header className="sticky top-0 z-10 flex h-16 items-center gap-4 border-b bg-background px-4 md:px-6">
       <SidebarTrigger className="md:hidden" />
       <h1 className="flex-1 text-xl font-semibold tracking-tight font-headline">{title}</h1>
       <Avatar>
-        <AvatarImage src={`https://avatar.vercel.sh/${profile?.role || 'user'}.png`} />
-        <AvatarFallback>{getInitials(profile?.role)}</AvatarFallback>
+        <AvatarImage src={`https://avatar.vercel.sh/${avatarIdentifier}.png`} />
+        <AvatarFallback>{getInitials(avatarIdentifier)}</AvatarFallback>
       </Avatar>
     </header>
   );

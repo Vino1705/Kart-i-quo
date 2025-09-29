@@ -4,12 +4,13 @@
 import React, { createContext, useState, ReactNode, useEffect } from 'react';
 import type { UserProfile, Goal, Transaction, FixedExpense, LoggedPayments, Contribution, EmergencyFundEntry } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
-import { getAuth, signOut } from 'firebase/auth';
+import { getAuth, signOut, onAuthStateChanged, User } from 'firebase/auth';
 import firebaseApp from '@/lib/firebase';
 import { useRouter } from 'next/navigation';
 import { format, formatISO, startOfDay, parseISO } from 'date-fns';
 
 interface AppContextType {
+  user: User | null;
   profile: UserProfile | null;
   goals: Goal[];
   transactions: Transaction[];
@@ -67,11 +68,21 @@ const calculateBudget = (income: number, fixedExpenses: { amount: number }[]): P
 export const AppProvider = ({ children }: { children: ReactNode }) => {
   const { toast } = useToast();
   const router = useRouter();
+  const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [goals, setGoals] = useState<Goal[]>([]);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loggedPayments, setLoggedPayments] = useState<LoggedPayments>({});
   const [onboardingComplete, setOnboardingComplete] = useState(false);
+
+  useEffect(() => {
+    const auth = getAuth(firebaseApp);
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+        setUser(currentUser);
+    });
+    return () => unsubscribe();
+  }, []);
+
 
   useEffect(() => {
     try {
@@ -427,6 +438,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   }
 
   const value = {
+    user,
     profile,
     goals,
     transactions,
@@ -451,5 +463,3 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 }
-
-    
