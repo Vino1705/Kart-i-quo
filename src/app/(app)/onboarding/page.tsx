@@ -31,7 +31,6 @@ const fixedExpenseSchema = z.object({
 });
 
 const onboardingSchema = z.object({
-  name: z.string().min(1, 'Please enter your name'),
   role: z.enum(['Student', 'Professional', 'Housewife']),
   income: z.coerce.number().min(0, 'Income cannot be negative'),
   fixedExpenses: z.array(fixedExpenseSchema).optional(),
@@ -60,7 +59,6 @@ export default function OnboardingPage() {
   const form = useForm<OnboardingValues>({
     resolver: zodResolver(onboardingSchema),
     defaultValues: {
-      name: '',
       income: 0,
       fixedExpenses: [],
     },
@@ -113,19 +111,6 @@ export default function OnboardingPage() {
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <FormField
-                  control={form.control}
-                  name="name"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Full Name</FormLabel>
-                      <FormControl>
-                        <Input placeholder="e.g., John Doe" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
                  <FormField
                   control={form.control}
                   name="income"
@@ -327,5 +312,3 @@ export default function OnboardingPage() {
     </div>
   );
 }
-
-    

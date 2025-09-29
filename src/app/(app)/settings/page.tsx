@@ -31,7 +31,6 @@ const fixedExpenseSchema = z.object({
 });
 
 const profileSchema = z.object({
-  name: z.string().min(1, 'Please enter your name'),
   role: z.enum(['Student', 'Professional', 'Housewife']),
   income: z.coerce.number().min(0, 'Income cannot be negative'),
   fixedExpenses: z.array(fixedExpenseSchema).optional(),
@@ -48,7 +47,6 @@ export default function SettingsPage() {
   const form = useForm<ProfileValues>({
     resolver: zodResolver(profileSchema),
     defaultValues: {
-      name: profile?.name || '',
       role: profile?.role || 'Professional',
       income: profile?.income || 0,
       fixedExpenses: profile?.fixedExpenses || [],
@@ -63,7 +61,6 @@ export default function SettingsPage() {
   React.useEffect(() => {
     if (profile) {
       form.reset({
-        name: profile.name || '',
         role: profile.role,
         income: profile.income,
         fixedExpenses: profile.fixedExpenses.map(exp => ({...exp, timelineMonths: exp.timelineMonths || undefined })),
@@ -90,19 +87,6 @@ export default function SettingsPage() {
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-               <FormField
-                control={form.control}
-                name="name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Full Name</FormLabel>
-                    <FormControl>
-                      <Input placeholder="e.g., John Doe" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
               <FormField
                 control={form.control}
                 name="role"
