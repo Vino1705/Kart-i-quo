@@ -211,7 +211,7 @@ export default function OnboardingPage() {
                             <FormItem>
                             <FormLabel>Timeline (Months)</FormLabel>
                             <FormControl>
-                                <Input type="number" placeholder="Optional" {...field} onChange={e => field.onChange(e.target.value === '' ? undefined : Number(e.target.value))} />
+                                <Input type="number" placeholder="Optional" {...field} value={field.value ?? ''} onChange={e => field.onChange(e.target.value === '' ? undefined : Number(e.target.value))} />
                             </FormControl>
                             <FormMessage />
                             </FormItem>
@@ -270,7 +270,7 @@ export default function OnboardingPage() {
                     variant="outline"
                     size="sm"
                     className="mt-4"
-                    onClick={() => append({ name: '', amount: 0, category: 'Other' })}
+                    onClick={() => append({ name: '', amount: 0, category: 'Other', timelineMonths: undefined, startDate: undefined })}
                   >
                     Add Expense
                   </Button>
@@ -312,3 +312,5 @@ export default function OnboardingPage() {
     </div>
   );
 }
+
+    
