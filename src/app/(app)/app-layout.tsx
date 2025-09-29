@@ -13,10 +13,9 @@ export default function AppLayoutContent({ children }: { children: React.ReactNo
   const [authChecked, setAuthChecked] = useState(false);
 
   useEffect(() => {
-    if (user === null) {
-      if (!['/login', '/signup', '/', '/onboarding'].includes(pathname)) {
+    // This effect runs once to check the initial auth state.
+    if (user === null && !['/login', '/signup', '/', '/onboarding'].includes(pathname)) {
         router.replace('/login');
-      }
     }
     setAuthChecked(true);
   }, [user, pathname, router]);
@@ -34,6 +33,8 @@ export default function AppLayoutContent({ children }: { children: React.ReactNo
     }
   }, [profile, user, pathname, router, authChecked]);
 
+
+  // Show a loading state until authentication has been checked.
   if (!authChecked || (user && profile === undefined && pathname !== '/onboarding' && pathname !== '/')) {
     return (
       <div className="flex h-screen items-center justify-center">
@@ -42,16 +43,20 @@ export default function AppLayoutContent({ children }: { children: React.ReactNo
     );
   }
 
+  // If the user is not logged in, or is on a public page, show the children directly.
+  // This covers the landing page ('/'), login, signup.
   const isPublicPage = ['/login', '/signup', '/'].includes(pathname);
-  if (isPublicPage) {
+  if (!user || isPublicPage) {
       return <>{children}</>;
   }
 
+  // If the user is logged in but hasn't completed onboarding, show the onboarding page.
   if (pathname === '/onboarding') {
     return <>{children}</>;
   }
   
-  // If we are here, user is logged in and onboarding is complete (or not needed)
+  // If we are here, user is logged in and onboarding is complete.
+  // Wrap the children with the main application layout.
   return (
     <AppLayout>
       {children}
