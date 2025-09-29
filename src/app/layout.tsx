@@ -4,7 +4,7 @@ import './globals.css';
 import { Nunito } from 'next/font/google';
 import { cn } from '@/lib/utils';
 import { AppProvider } from '@/context/app-context';
-import AppLayoutContent from './(app)/app-layout';
+import AuthLayout from './(auth)/layout';
 
 const nunito = Nunito({
   subsets: ['latin'],
@@ -29,9 +29,7 @@ export default function RootLayout({
         nunito.variable
       )}>
         <AppProvider>
-            <AppLayoutContent>
-                {children}
-            </AppLayoutContent>
+          {children}
         </AppProvider>
         <Toaster />
       </body>

@@ -14,8 +14,6 @@ import {
   CreditCard,
   ShieldAlert,
 } from 'lucide-react';
-import { onAuthStateChanged, getAuth, User } from 'firebase/auth';
-import firebaseApp from '@/lib/firebase';
 import { useApp } from '@/hooks/use-app';
 import { SidebarProvider, Sidebar, SidebarHeader, SidebarContent, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarFooter, SidebarInset } from '@/components/ui/sidebar';
 import { DashboardHeader } from '@/components/dashboard-header';
@@ -33,7 +31,41 @@ const navItems = [
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const { logout } = useApp();
+  const router = useRouter();
+  const { logout, user, profile } = useApp();
+  const [authChecked, setAuthChecked] = useState(false);
+
+  useEffect(() => {
+    if (user === null) {
+        router.replace('/login');
+    }
+    setAuthChecked(true);
+  }, [user, router]);
+  
+  useEffect(() => {
+    if (authChecked && user) {
+        const hasCompletedOnboarding = profile && profile.role;
+        const isOnboardingPage = pathname === '/onboarding';
+
+        if (hasCompletedOnboarding && isOnboardingPage) {
+            router.replace('/dashboard');
+        } else if (!hasCompletedOnboarding && !isOnboardingPage) {
+            router.replace('/onboarding');
+        }
+    }
+  }, [authChecked, user, profile, pathname, router]);
+
+  if (!authChecked || !user || !profile?.role) {
+    // Show a loading state or the onboarding page itself
+    if (pathname === '/onboarding') {
+        return <>{children}</>;
+    }
+    return (
+        <div className="flex h-screen items-center justify-center">
+            <p>Loading your experience...</p>
+        </div>
+    );
+  }
 
   return (
     <SidebarProvider>
