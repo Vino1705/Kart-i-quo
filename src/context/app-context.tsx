@@ -144,32 +144,12 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       if (storedGoals) {
         setGoals(JSON.parse(storedGoals));
       } else {
-        const initialContribution: Contribution = { amount: 5000, date: new Date().toISOString() };
-        const initialGoal: Goal = {
-          id: '1',
-          name: 'New Laptop',
-          targetAmount: 80000,
-          currentAmount: 5000,
-          monthlyContribution: 5000,
-          timelineMonths: 16,
-          startDate: formatISO(new Date()),
-          contributions: [initialContribution],
-        };
-        setGoals([initialGoal]);
-        persistState(GOALS_KEY, [initialGoal]);
+        setGoals([]);
       }
       if (storedTransactions) {
         setTransactions(JSON.parse(storedTransactions));
       } else {
-        const initialTransaction: Transaction = {
-          id: '1',
-          amount: 150,
-          category: 'Food & Dining',
-          description: 'Lunch with friends',
-          date: new Date().toISOString()
-        };
-        setTransactions([initialTransaction]);
-        persistState(TRANSACTIONS_KEY, [initialTransaction]);
+        setTransactions([]);
       }
       if (storedLoggedPayments) {
         setLoggedPayments(JSON.parse(storedLoggedPayments));

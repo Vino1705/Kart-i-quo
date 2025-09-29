@@ -59,8 +59,8 @@ export default function OnboardingPage() {
   const form = useForm<OnboardingValues>({
     resolver: zodResolver(onboardingSchema),
     defaultValues: {
-      income: 38000,
-      fixedExpenses: [{ name: 'Rent', amount: 18000, category: 'Rent/EMI', timelineMonths: 12, startDate: new Date().toISOString() }],
+      income: 0,
+      fixedExpenses: [],
     },
   });
 
@@ -179,7 +179,7 @@ export default function OnboardingPage() {
                                     <FormControl>
                                         <SelectTrigger>
                                             <SelectValue placeholder="Category" />
-                                        </SelectTrigger>
+                                        </Trigger>
                                     </FormControl>
                                     <SelectContent>
                                         {expenseCategories.map(cat => (
