@@ -1,6 +1,26 @@
 import type { Metadata } from 'next';
 import { Toaster } from "@/components/ui/toaster"
 import './globals.css';
+import { Montserrat, Nunito, Share_Tech_Mono } from 'next/font/google';
+import { cn } from '@/lib/utils';
+
+const montserrat = Montserrat({
+  subsets: ['latin'],
+  variable: '--font-montserrat',
+  weight: '800',
+});
+
+const nunito = Nunito({
+  subsets: ['latin'],
+  variable: '--font-nunito',
+});
+
+const shareTechMono = Share_Tech_Mono({
+  subsets: ['latin'],
+  variable: '--font-share-tech-mono',
+  weight: '400',
+});
+
 
 export const metadata: Metadata = {
   title: 'Kart-i-quo',
@@ -14,12 +34,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="dark">
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=PT+Sans:wght@400;700&display=swap" rel="stylesheet" />
-      </head>
-      <body className="font-body antialiased">
+      <body className={cn(
+        "font-body antialiased",
+        montserrat.variable,
+        nunito.variable,
+        shareTechMono.variable
+      )}>
         {children}
         <Toaster />
       </body>

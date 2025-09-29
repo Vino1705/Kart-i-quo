@@ -48,7 +48,7 @@ function SummaryCard({ title, amount, icon, description }: { title: string; amou
                   <span className="text-xs text-muted-foreground">{description}</span>
                 </div>
             </div>
-            <div className="text-sm font-bold">₹{amount.toFixed(2)}</div>
+            <div className="text-sm font-bold font-numeric">₹{amount.toFixed(2)}</div>
         </div>
     )
 }
@@ -101,7 +101,7 @@ export default function OnboardingPage() {
   }
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-background p-4">
+    <div className="flex items-center justify-center min-h-screen p-4">
       <Card className="w-full max-w-4xl">
         <CardHeader>
           <CardTitle className="text-2xl font-headline">Welcome to Kart-i-quo!</CardTitle>
@@ -299,7 +299,7 @@ export default function OnboardingPage() {
                             <span className="text-sm font-semibold">Suggested Daily Spending</span>
                             <span className="text-xs text-muted-foreground">This is your 'Wants' budget per day.</span>
                         </div>
-                        <div className="text-xl font-bold font-headline text-primary">₹{dailyLimit.toFixed(2)}</div>
+                        <div className="text-xl font-bold font-headline text-primary font-numeric">₹{dailyLimit.toFixed(2)}</div>
                      </div>
                   </CardFooter>
               </Card>
@@ -312,5 +312,3 @@ export default function OnboardingPage() {
     </div>
   );
 }
-
-    

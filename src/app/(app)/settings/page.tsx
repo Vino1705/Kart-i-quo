@@ -27,7 +27,7 @@ const fixedExpenseSchema = z.object({
   name: z.string().min(1, 'Expense name is required'),
   amount: z.coerce.number().min(0, 'Amount must be positive'),
   category: z.string().min(1, 'Category is required'),
-  timelineMonths: z.coerce.number().optional(),
+  timelineMonths: z.coerce.number().optional().nullable(),
   startDate: z.string().optional(),
 });
 
@@ -64,7 +64,7 @@ export default function SettingsPage() {
       form.reset({
         role: profile.role,
         income: profile.income,
-        fixedExpenses: profile.fixedExpenses.map(exp => ({...exp, timelineMonths: exp.timelineMonths || undefined })),
+        fixedExpenses: profile.fixedExpenses.map(exp => ({...exp, timelineMonths: exp.timelineMonths || null })),
       });
     }
   }, [profile, form]);
@@ -189,7 +189,7 @@ export default function SettingsPage() {
                             <FormItem>
                                 <FormLabel>Timeline</FormLabel>
                                 <FormControl>
-                                    <Input type="number" placeholder="Months (Opt)" {...field} value={field.value ?? ''} onChange={e => field.onChange(e.target.value === '' ? undefined : Number(e.target.value))} />
+                                    <Input type="number" placeholder="Months (Opt)" {...field} value={field.value ?? ''} onChange={e => field.onChange(e.target.value === '' ? null : Number(e.target.value))} />
                                 </FormControl>
                                 <FormMessage />
                             </FormItem>
@@ -248,7 +248,7 @@ export default function SettingsPage() {
                     variant="outline"
                     size="sm"
                     className="mt-4"
-                    onClick={() => append({ name: '', amount: 0, category: 'Other', timelineMonths: undefined, startDate: undefined })}
+                    onClick={() => append({ id: `new-${Date.now()}`, name: '', amount: 0, category: 'Other', timelineMonths: null, startDate: undefined })}
                     >
                     Add Expense
                     </Button>
@@ -296,5 +296,3 @@ export default function SettingsPage() {
     </div>
   );
 }
-
-    

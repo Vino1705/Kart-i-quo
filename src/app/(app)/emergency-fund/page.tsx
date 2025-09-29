@@ -166,8 +166,8 @@ export default function EmergencyFundPage() {
                     Fund Progress
                 </CardTitle>
                 <div className="text-right">
-                    <p className="text-2xl font-bold">₹{emergencyFund.current.toFixed(2)}</p>
-                    <div className="text-sm text-muted-foreground flex items-center justify-end gap-1">
+                    <p className="text-2xl font-bold font-numeric">₹{emergencyFund.current.toFixed(2)}</p>
+                    <div className="text-sm text-muted-foreground flex items-center justify-end gap-1 font-numeric">
                         <span>Target: ₹{emergencyFund.target.toFixed(2)}</span>
                         <SetTargetDialog />
                     </div>
@@ -196,7 +196,7 @@ export default function EmergencyFundPage() {
                         <div className="flex items-center gap-4">
                              {entry.type === 'deposit' ? <TrendingUp className="h-6 w-6 text-green-500" /> : <TrendingDown className="h-6 w-6 text-destructive" />}
                             <div>
-                                <p className={`font-semibold ${entry.type === 'deposit' ? 'text-green-500' : 'text-destructive'}`}>
+                                <p className={`font-semibold font-numeric ${entry.type === 'deposit' ? 'text-green-500' : 'text-destructive'}`}>
                                     {entry.type === 'deposit' ? '+' : '-'} ₹{entry.amount.toFixed(2)}
                                 </p>
                                 <p className="text-xs text-muted-foreground">

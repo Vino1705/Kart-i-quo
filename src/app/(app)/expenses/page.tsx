@@ -127,7 +127,7 @@ export default function ExpensesPage() {
                         <TableCell>
                             <Badge variant="secondary">{t.category}</Badge>
                         </TableCell>
-                        <TableCell className="text-right">₹{t.amount.toFixed(2)}</TableCell>
+                        <TableCell className="text-right font-numeric">₹{t.amount.toFixed(2)}</TableCell>
                         </TableRow>
                     ))}
                     </TableBody>

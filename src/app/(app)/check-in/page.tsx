@@ -180,12 +180,12 @@ export default function CheckInPage() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              <div className="flex justify-between font-medium">
+              <div className="flex justify-between font-medium font-numeric">
                 <span>Spent Today</span>
                 <span>₹{todaysSpending.toFixed(2)} / ₹{dailyLimit.toFixed(2)}</span>
               </div>
               <Progress value={progress} />
-              <div className={`text-center font-bold ${remaining >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+              <div className={`text-center font-bold font-numeric ${remaining >= 0 ? 'text-green-500' : 'text-red-500'}`}>
                 {remaining >= 0 ? `₹${remaining.toFixed(2)} Remaining` : `₹${Math.abs(remaining).toFixed(2)} Over Limit`}
               </div>
             </div>
@@ -268,7 +268,7 @@ export default function CheckInPage() {
                       </TableCell>
                       <TableCell className="font-medium">{t.description}</TableCell>
                       <TableCell>{t.category}</TableCell>
-                      <TableCell className="text-right">₹{t.amount.toFixed(2)}</TableCell>
+                      <TableCell className="text-right font-numeric">₹{t.amount.toFixed(2)}</TableCell>
                       <TableCell className="text-right">
                          <div className="flex justify-end gap-2">
                             <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleEditClick(t)}>

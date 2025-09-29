@@ -92,7 +92,7 @@ export default function FixedExpensesPage() {
                       <TableRow key={exp.id}>
                         <TableCell className="font-medium">{exp.name}</TableCell>
                         <TableCell><Badge variant="secondary">{exp.category}</Badge></TableCell>
-                        <TableCell>₹{exp.amount.toFixed(2)}</TableCell>
+                        <TableCell className="font-numeric">₹{exp.amount.toFixed(2)}</TableCell>
                         <TableCell className="text-right">
                           <Button
                             size="sm"
@@ -202,7 +202,7 @@ export default function FixedExpensesPage() {
                         <div key={exp.id}>
                             <div className="flex justify-between items-center mb-1">
                                 <span className="font-medium">{exp.name}</span>
-                                <span className="text-sm text-muted-foreground">
+                                <span className="text-sm text-muted-foreground font-numeric">
                                     {elapsedMonths} / {totalMonths} months paid
                                 </span>
                             </div>

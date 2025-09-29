@@ -151,7 +151,7 @@ function GoalDialog({ goal, children }: { goal?: Goal, children: React.ReactNode
                 <AlertDescription>
                     <p>{suggestion}</p>
                     { availableSavings >= 0 ?
-                        <p className="font-medium mt-2">Available for Goals: ₹{availableSavings.toFixed(2)} / month</p>
+                        <p className="font-medium mt-2 font-numeric">Available for Goals: ₹{availableSavings.toFixed(2)} / month</p>
                         :
                         <p className="font-medium mt-2 text-destructive">You've committed all your savings.</p>
                     }
@@ -208,7 +208,7 @@ function ContributeDialog({ goal, children }: { goal: Goal, children: React.Reac
                      <Alert variant="default">
                         <Wallet className="h-4 w-4" />
                         <AlertDescription>
-                            Your remaining emergency fund savings after this contribution would be approximately ₹{(emergencyFund - amount).toFixed(2)}.
+                            Your remaining emergency fund savings after this contribution would be approximately <span className="font-numeric">₹{(emergencyFund - amount).toFixed(2)}</span>.
                         </AlertDescription>
                     </Alert>
                 </div>
@@ -241,7 +241,7 @@ function HistorySheet({ goal }: { goal: Goal }) {
                 goal.contributions.map((c, index) => (
                 <div key={index} className="flex justify-between items-center rounded-md border p-3">
                     <div>
-                    <p className="font-medium">₹{c.amount.toFixed(2)}</p>
+                    <p className="font-medium font-numeric">₹{c.amount.toFixed(2)}</p>
                     <p className="text-xs text-muted-foreground">
                         {format(new Date(c.date), 'PPP p')}
                     </p>
@@ -344,7 +344,7 @@ export default function GoalsPage() {
                              </Button>
                          </GoalDialog>
                     </div>
-                  <CardDescription>
+                  <CardDescription className="font-numeric">
                     ₹{goal.currentAmount.toFixed(2)} saved of ₹{goal.targetAmount.toFixed(2)}
                   </CardDescription>
                 </CardHeader>
@@ -352,7 +352,7 @@ export default function GoalsPage() {
                   <div>
                     <div className="flex justify-between text-sm mb-1">
                         <span className="text-muted-foreground">Amount Saved</span>
-                        <span>{amountProgress.toFixed(1)}%</span>
+                        <span className="font-numeric">{amountProgress.toFixed(1)}%</span>
                     </div>
                     <Progress value={amountProgress} className="w-full h-2" />
                   </div>
@@ -361,7 +361,7 @@ export default function GoalsPage() {
                      <div>
                         <div className="flex justify-between text-sm mb-1">
                             <span className="text-muted-foreground">Timeline</span>
-                            <span>{elapsedMonths} of {goal.timelineMonths} months</span>
+                            <span className="font-numeric">{elapsedMonths} of {goal.timelineMonths} months</span>
                         </div>
                         <Progress value={timeProgress} className="w-full h-2" />
                      </div>
