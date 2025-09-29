@@ -59,7 +59,7 @@ export default function OnboardingPage() {
     resolver: zodResolver(onboardingSchema),
     defaultValues: {
       income: 38000,
-      fixedExpenses: [{ name: 'Rent', amount: 18000, category: 'Rent/EMI' }],
+      fixedExpenses: [{ name: 'Rent', amount: 18000, category: 'Rent/EMI', timelineMonths: 12 }],
     },
   });
 
