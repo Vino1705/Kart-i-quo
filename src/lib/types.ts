@@ -17,7 +17,7 @@ export interface FixedExpense {
   amount: number;
   category: string;
   timelineMonths?: number;
-  startDate?: string;
+  startDate?: string; // Should be an ISO string
 }
 
 export interface Goal {

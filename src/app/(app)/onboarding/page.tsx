@@ -15,12 +15,18 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Trash, Wallet, PiggyBank, ShoppingCart } from 'lucide-react';
 import React from 'react';
 import { expenseCategories } from '@/lib/types';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { CalendarIcon } from 'lucide-react';
+import { format } from 'date-fns';
+import { Calendar } from '@/components/ui/calendar';
+import { cn } from '@/lib/utils';
 
 const fixedExpenseSchema = z.object({
   name: z.string().min(1, 'Expense name is required'),
   amount: z.coerce.number().min(0, 'Amount must be positive'),
   category: z.string().min(1, 'Category is required'),
   timelineMonths: z.coerce.number().optional(),
+  startDate: z.string().optional(),
 });
 
 const onboardingSchema = z.object({
@@ -87,7 +93,7 @@ export default function OnboardingPage() {
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-background p-4">
-      <Card className="w-full max-w-3xl">
+      <Card className="w-full max-w-4xl">
         <CardHeader>
           <CardTitle className="text-2xl font-headline">Welcome to Kwik Kash!</CardTitle>
           <CardDescription>Let's set up your financial profile to tailor your experience.</CardDescription>
@@ -137,29 +143,18 @@ export default function OnboardingPage() {
                 <Label className="text-lg font-medium">Fixed Monthly Expenses</Label>
                 <p className="text-sm text-muted-foreground mb-4">Enter expenses like rent, EMIs, or subscriptions. This helps us calculate your 'Needs'.</p>
                 <div className="space-y-4">
-                  {fields.map((field, index) => (
-                    <div key={field.id} className="grid grid-cols-1 md:grid-cols-4 items-end gap-4">
+                  {fields.map((field, index) => {
+                     const timelineMonths = form.watch(`fixedExpenses.${index}.timelineMonths`);
+                    return (
+                    <div key={field.id} className="grid grid-cols-1 md:grid-cols-[2fr,1fr,1fr,1fr,auto] items-end gap-4 p-4 border rounded-lg">
                       <FormField
                         control={form.control}
                         name={`fixedExpenses.${index}.name`}
                         render={({ field }) => (
-                          <FormItem className="md:col-span-2">
+                          <FormItem>
                             <FormLabel>Expense Name</FormLabel>
                             <FormControl>
                               <Input placeholder="e.g., Rent" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name={`fixedExpenses.${index}.amount`}
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Amount (₹)</FormLabel>
-                            <FormControl>
-                              <Input type="number" placeholder="Amount" {...field} />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -187,24 +182,79 @@ export default function OnboardingPage() {
                             </FormItem>
                         )}
                         />
-                         <FormField
-                          control={form.control}
-                          name={`fixedExpenses.${index}.timelineMonths`}
-                          render={({ field }) => (
+                      <FormField
+                        control={form.control}
+                        name={`fixedExpenses.${index}.amount`}
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Amount (₹)</FormLabel>
+                            <FormControl>
+                              <Input type="number" placeholder="Amount" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name={`fixedExpenses.${index}.timelineMonths`}
+                        render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Timeline (Months)</FormLabel>
-                              <FormControl>
-                                <Input type="number" placeholder="Optional" {...field} />
-                              </FormControl>
-                              <FormMessage />
+                            <FormLabel>Timeline (Months)</FormLabel>
+                            <FormControl>
+                                <Input type="number" placeholder="Optional" {...field} onChange={e => field.onChange(e.target.value === '' ? undefined : Number(e.target.value))} />
+                            </FormControl>
+                            <FormMessage />
                             </FormItem>
-                          )}
+                        )}
                         />
-                      <Button type="button" variant="destructive" size="icon" onClick={() => remove(index)} className="md:col-start-5">
+                      
+                      <Button type="button" variant="destructive" size="icon" onClick={() => remove(index)}>
                         <Trash className="h-4 w-4" />
                       </Button>
+
+                      {!!timelineMonths && (
+                        <FormField
+                            control={form.control}
+                            name={`fixedExpenses.${index}.startDate`}
+                            render={({ field }) => (
+                            <FormItem className="flex flex-col mt-2 md:col-span-2">
+                                <FormLabel>Start Date</FormLabel>
+                                <Popover>
+                                    <PopoverTrigger asChild>
+                                        <FormControl>
+                                        <Button
+                                            variant={"outline"}
+                                            className={cn(
+                                                "pl-3 text-left font-normal",
+                                                !field.value && "text-muted-foreground"
+                                            )}
+                                        >
+                                            {field.value ? (
+                                                format(new Date(field.value), "PPP")
+                                            ) : (
+                                                <span>Pick a date</span>
+                                            )}
+                                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                        </Button>
+                                        </FormControl>
+                                    </PopoverTrigger>
+                                    <PopoverContent className="w-auto p-0" align="start">
+                                        <Calendar
+                                        mode="single"
+                                        selected={field.value ? new Date(field.value) : undefined}
+                                        onSelect={(date) => field.onChange(date?.toISOString())}
+                                        initialFocus
+                                        />
+                                    </PopoverContent>
+                                </Popover>
+                                <FormMessage />
+                            </FormItem>
+                            )}
+                        />
+                      )}
                     </div>
-                  ))}
+                  )})}
                 </div>
                  <Button
                     type="button"

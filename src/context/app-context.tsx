@@ -134,7 +134,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     const fixedExpenses = newProfileData.fixedExpenses?.map(exp => ({
         ...exp,
         id: exp.id || Math.random().toString(),
-        startDate: exp.timelineMonths && !exp.startDate ? formatISO(new Date()) : exp.startDate
+        startDate: (exp.timelineMonths && !exp.startDate) ? formatISO(new Date()) : exp.startDate
     })) ?? profile?.fixedExpenses ?? [];
     
     const budget = calculateBudget(income, fixedExpenses);
@@ -327,10 +327,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       setTransactions([]);
       setLoggedFixedExpenses({});
       setOnboardingComplete(false);
-      localStorage.removeItem('kwik-kash-profile');
-      localStorage.removeItem('kwik-kash-goals');
-      localStorage.removeItem('kwik-kash-transactions');
-      localStorage.removeItem('kwik-kash-logged-fixed');
+      
       router.push('/login');
     } catch (error) {
        console.error("Logout failed", error);

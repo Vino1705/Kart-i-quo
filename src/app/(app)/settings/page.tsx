@@ -11,12 +11,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Trash } from 'lucide-react';
+import { Trash, CalendarIcon } from 'lucide-react';
 import React from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { Label } from '@/components/ui/label';
 import { expenseCategories } from '@/lib/types';
-
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { format } from 'date-fns';
+import { Calendar } from '@/components/ui/calendar';
+import { cn } from '@/lib/utils';
 
 const fixedExpenseSchema = z.object({
   id: z.string().optional(),
@@ -60,7 +63,7 @@ export default function SettingsPage() {
       form.reset({
         role: profile.role,
         income: profile.income,
-        fixedExpenses: profile.fixedExpenses,
+        fixedExpenses: profile.fixedExpenses.map(exp => ({...exp, timelineMonths: exp.timelineMonths || undefined })),
       });
     }
   }, [profile, form]);
@@ -75,7 +78,7 @@ export default function SettingsPage() {
   }
 
   return (
-    <Card className="w-full max-w-3xl mx-auto">
+    <Card className="w-full max-w-4xl mx-auto">
       <CardHeader>
         <CardTitle className="text-2xl font-headline">Profile Settings</CardTitle>
         <CardDescription>Update your personal and financial information here. Your budget is calculated based on your disposable income.</CardDescription>
@@ -125,14 +128,16 @@ export default function SettingsPage() {
               <Label className="text-lg font-medium">Fixed Monthly Expenses</Label>
               <p className="text-sm text-muted-foreground mb-4">Update your recurring expenses like rent, EMIs, or subscriptions.</p>
               <div className="space-y-4">
-                {fields.map((field, index) => (
-                  <div key={field.id} className="grid md:grid-cols-5 gap-2 items-end">
+                {fields.map((field, index) => {
+                    const timelineMonths = form.watch(`fixedExpenses.${index}.timelineMonths`);
+                    return (
+                  <div key={field.id} className="grid grid-cols-1 md:grid-cols-[2fr,1fr,1fr,1fr,auto] items-end gap-4 p-4 border rounded-lg">
                     <FormField
                       control={form.control}
                       name={`fixedExpenses.${index}.name`}
                       render={({ field }) => (
-                        <FormItem className="md:col-span-2">
-                          <FormLabel className="sr-only">Expense Name</FormLabel>
+                        <FormItem>
+                          <FormLabel>Expense Name</FormLabel>
                           <FormControl>
                             <Input placeholder="Expense Name" {...field} />
                           </FormControl>
@@ -145,7 +150,7 @@ export default function SettingsPage() {
                         name={`fixedExpenses.${index}.category`}
                         render={({ field }) => (
                             <FormItem>
-                               <FormLabel className="sr-only">Category</FormLabel>
+                               <FormLabel>Category</FormLabel>
                                 <Select onValueChange={field.onChange} value={field.value}>
                                     <FormControl>
                                         <SelectTrigger>
@@ -164,11 +169,10 @@ export default function SettingsPage() {
                         />
                     <FormField
                       control={form.control}
-      
                       name={`fixedExpenses.${index}.amount`}
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="sr-only">Amount</FormLabel>
+                          <FormLabel>Amount</FormLabel>
                           <FormControl>
                             <Input type="number" placeholder="Amount (₹)" {...field} />
                           </FormControl>
@@ -181,9 +185,9 @@ export default function SettingsPage() {
                         name={`fixedExpenses.${index}.timelineMonths`}
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel className="sr-only">Timeline</FormLabel>
+                            <FormLabel>Timeline</FormLabel>
                             <FormControl>
-                              <Input type="number" placeholder="Months (Opt)" {...field} />
+                                <Input type="number" placeholder="Months (Opt)" {...field} value={field.value ?? ''} onChange={e => field.onChange(e.target.value === '' ? undefined : Number(e.target.value))} />
                             </FormControl>
                              <FormMessage />
                           </FormItem>
@@ -192,15 +196,57 @@ export default function SettingsPage() {
                     <Button type="button" variant="destructive" size="icon" onClick={() => remove(index)}>
                       <Trash className="h-4 w-4" />
                     </Button>
+
+                     {!!timelineMonths && (
+                        <FormField
+                            control={form.control}
+                            name={`fixedExpenses.${index}.startDate`}
+                            render={({ field }) => (
+                            <FormItem className="flex flex-col mt-2 md:col-span-2">
+                                <FormLabel>Start Date</FormLabel>
+                                <Popover>
+                                    <PopoverTrigger asChild>
+                                        <FormControl>
+                                        <Button
+                                            variant={"outline"}
+                                            className={cn(
+                                                "pl-3 text-left font-normal",
+                                                !field.value && "text-muted-foreground"
+                                            )}
+                                        >
+                                            {field.value ? (
+                                                format(new Date(field.value), "PPP")
+                                            ) : (
+                                                <span>Pick a date</span>
+                                            )}
+                                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                        </Button>
+                                        </FormControl>
+                                    </PopoverTrigger>
+                                    <PopoverContent className="w-auto p-0" align="start">
+                                        <Calendar
+                                        mode="single"
+                                        selected={field.value ? new Date(field.value) : undefined}
+                                        onSelect={(date) => field.onChange(date?.toISOString())}
+                                        initialFocus
+                                        />
+                                    </PopoverContent>
+                                </Popover>
+                                <FormMessage />
+                            </FormItem>
+                            )}
+                        />
+                      )}
+
                   </div>
-                ))}
+                )})}
               </div>
               <Button
                   type="button"
                   variant="outline"
                   size="sm"
                   className="mt-4"
-                  onClick={() => append({ name: '', amount: 0, category: 'Other', timelineMonths: undefined })}
+                  onClick={() => append({ name: '', amount: 0, category: 'Other', timelineMonths: undefined, startDate: undefined })}
                 >
                   Add Expense
                 </Button>
