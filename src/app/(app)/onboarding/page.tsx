@@ -26,7 +26,7 @@ const fixedExpenseSchema = z.object({
   name: z.string().min(1, 'Expense name is required'),
   amount: z.coerce.number().min(0, 'Amount must be positive'),
   category: z.string().min(1, 'Category is required'),
-  timelineMonths: z.coerce.number().optional(),
+  timelineMonths: z.coerce.number().optional().nullable(),
   startDate: z.string().optional(),
 });
 
@@ -76,7 +76,7 @@ export default function OnboardingPage() {
     const income = Number(watchedIncome) || 0;
     const fixedExpenses = watchedFixedExpenses || [];
     
-    const needs = fixedExpenses.reduce((sum, exp) => sum + (exp.amount || 0), 0);
+    const needs = fixedExpenses.reduce((sum, exp) => sum + (Number(exp.amount) || 0), 0);
     const disposableIncome = income - needs;
     
     const wants = disposableIncome * 0.6;
@@ -211,7 +211,7 @@ export default function OnboardingPage() {
                             <FormItem>
                             <FormLabel>Timeline (Months)</FormLabel>
                             <FormControl>
-                                <Input type="number" placeholder="Optional" {...field} value={field.value ?? ''} onChange={e => field.onChange(e.target.value === '' ? undefined : Number(e.target.value))} />
+                                <Input type="number" placeholder="Optional" {...field} value={field.value ?? ''} onChange={e => field.onChange(e.target.value === '' ? null : Number(e.target.value))} />
                             </FormControl>
                             <FormMessage />
                             </FormItem>
@@ -270,7 +270,7 @@ export default function OnboardingPage() {
                     variant="outline"
                     size="sm"
                     className="mt-4"
-                    onClick={() => append({ name: '', amount: 0, category: 'Other', timelineMonths: undefined, startDate: undefined })}
+                    onClick={() => append({ name: '', amount: 0, category: 'Other', timelineMonths: null, startDate: undefined })}
                   >
                     Add Expense
                   </Button>
