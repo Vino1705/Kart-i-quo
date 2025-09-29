@@ -42,13 +42,6 @@ const GOALS_KEY = `${KART_I_QUO_PREFIX}goals`;
 const TRANSACTIONS_KEY = `${KART_I_QUO_PREFIX}transactions`;
 const LOGGED_PAYMENTS_KEY = `${KART_I_QUO_PREFIX}logged-payments`;
 
-// --- Migration from old keys ---
-const OLD_PREFIX = 'kwik-kash-'; 
-const OLD_PROFILE_KEY = `${OLD_PREFIX}profile`;
-const OLD_GOALS_KEY = `${OLD_PREFIX}goals`;
-const OLD_TRANSACTIONS_KEY = `${OLD_PREFIX}transactions`;
-const OLD_LOGGED_PAYMENTS_KEY = `${OLD_PREFIX}logged-payments`;
-
 const calculateBudget = (income: number, fixedExpenses: { amount: number }[]): Pick<UserProfile, 'monthlyNeeds' | 'monthlyWants' | 'monthlySavings' | 'dailySpendingLimit'> => {
     const needs = fixedExpenses.reduce((sum, exp) => sum + (exp.amount || 0), 0);
     const disposableIncome = income - needs;
@@ -83,18 +76,6 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         if (currentUser) {
             // User is signed in, load their data
              try {
-                const hasNewData = !!localStorage.getItem(PROFILE_KEY);
-                if (!hasNewData) {
-                    const oldProfile = localStorage.getItem(OLD_PROFILE_KEY);
-                    if (oldProfile) localStorage.setItem(PROFILE_KEY, oldProfile);
-                    const oldGoals = localStorage.getItem(OLD_GOALS_KEY);
-                    if (oldGoals) localStorage.setItem(GOALS_KEY, oldGoals);
-                    const oldTransactions = localStorage.getItem(OLD_TRANSACTIONS_KEY);
-                    if (oldTransactions) localStorage.setItem(TRANSACTIONS_KEY, oldTransactions);
-                    const oldLoggedPayments = localStorage.getItem(OLD_LOGGED_PAYMENTS_KEY);
-                    if (oldLoggedPayments) localStorage.setItem(LOGGED_PAYMENTS_KEY, oldLoggedPayments);
-                }
-
                 const storedProfile = localStorage.getItem(PROFILE_KEY);
                 if (storedProfile) {
                     let parsedProfile: UserProfile = JSON.parse(storedProfile);
@@ -392,15 +373,10 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
 
   const deleteAccount = async () => {
     try {
-        // Remove both new and old data to be safe
         localStorage.removeItem(PROFILE_KEY);
         localStorage.removeItem(GOALS_KEY);
         localStorage.removeItem(TRANSACTIONS_KEY);
         localStorage.removeItem(LOGGED_PAYMENTS_KEY);
-        localStorage.removeItem(OLD_PROFILE_KEY);
-        localStorage.removeItem(OLD_GOALS_KEY);
-        localStorage.removeItem(OLD_TRANSACTIONS_KEY);
-        localStorage.removeItem(OLD_LOGGED_PAYMENTS_KEY);
 
         const auth = getAuth(firebaseApp);
         if (auth.currentUser) {
