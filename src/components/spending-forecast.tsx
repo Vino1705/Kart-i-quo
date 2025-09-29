@@ -11,17 +11,25 @@ import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 export function SpendingForecast() {
-  const { transactions } = useApp();
+  const { profile, goals, transactions } = useApp();
   const [forecast, setForecast] = useState<{ predictedLimit: string; alerts: string } | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
   const handleGetForecast = async () => {
-    if (transactions.length === 0) {
+    if (!profile) {
+       toast({
+        variant: 'destructive',
+        title: 'Profile Not Found',
+        description: 'Please complete onboarding first.',
+      });
+      return;
+    }
+    if (transactions.length < 5) {
       toast({
         variant: 'destructive',
         title: 'Not Enough Data',
-        description: 'Log some expenses before getting a forecast.',
+        description: 'Log at least 5 expenses before getting a forecast.',
       });
       return;
     }
@@ -31,6 +39,8 @@ export function SpendingForecast() {
 
     try {
       const input: ForecastSpendingInput = {
+        income: profile.income,
+        goals: goals.map(g => ({ name: g.name, targetAmount: g.targetAmount, monthlyContribution: g.monthlyContribution })),
         expensesData: transactions
           .filter(t => t.category)
           .map(t => ({ amount: t.amount, category: t.category, date: t.date })),
