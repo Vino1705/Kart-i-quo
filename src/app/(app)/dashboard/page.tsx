@@ -2,7 +2,7 @@
 "use client";
 
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
 import { IndianRupee, Target, TrendingUp, TrendingDown, PiggyBank, Wallet, ShoppingCart, ShieldCheck, ShieldAlert } from 'lucide-react';
