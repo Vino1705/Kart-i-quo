@@ -37,7 +37,9 @@ export function AiRecommendations() {
           target: g.targetAmount,
           timelineMonths: g.timelineMonths,
         })),
-        currentExpenses: transactions.map(t => ({
+        currentExpenses: transactions
+          .filter(t => t.category)
+          .map(t => ({
           name: t.category,
           amount: t.amount,
         })),
