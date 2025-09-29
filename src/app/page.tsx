@@ -1,3 +1,9 @@
+
+"use client";
+
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { useApp } from '@/hooks/use-app';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
@@ -32,6 +38,28 @@ const features = [
 ];
 
 export default function LandingPage() {
+  const { user, profile } = useApp();
+  const router = useRouter();
+
+  useEffect(() => {
+    // If the user is logged in and has completed onboarding, redirect to the dashboard
+    if (user && profile?.role) {
+      router.replace('/dashboard');
+    }
+  }, [user, profile, router]);
+
+  // If user state is still loading, or if they are logged in, don't render the landing page contents to avoid a flash.
+  if (user !== null && user !== undefined) {
+    if (profile?.role) {
+      return (
+        <div className="flex h-screen items-center justify-center">
+          <p>Loading...</p>
+        </div>
+      );
+    }
+  }
+
+
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">

@@ -3,6 +3,7 @@ import { Toaster } from "@/components/ui/toaster"
 import './globals.css';
 import { Montserrat, Nunito, Share_Tech_Mono } from 'next/font/google';
 import { cn } from '@/lib/utils';
+import { AppProvider } from '@/context/app-context';
 
 const montserrat = Montserrat({
   subsets: ['latin'],
@@ -40,7 +41,9 @@ export default function RootLayout({
         nunito.variable,
         shareTechMono.variable
       )}>
-        {children}
+        <AppProvider>
+            {children}
+        </AppProvider>
         <Toaster />
       </body>
     </html>

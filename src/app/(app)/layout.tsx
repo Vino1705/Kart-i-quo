@@ -16,7 +16,6 @@ import {
 } from 'lucide-react';
 import { onAuthStateChanged, getAuth, User } from 'firebase/auth';
 import firebaseApp from '@/lib/firebase';
-import { AppProvider } from '@/context/app-context';
 import { useApp } from '@/hooks/use-app';
 import { SidebarProvider, Sidebar, SidebarHeader, SidebarContent, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarFooter, SidebarInset } from '@/components/ui/sidebar';
 import { DashboardHeader } from '@/components/dashboard-header';
@@ -32,7 +31,7 @@ const navItems = [
   { href: '/emergency-fund', icon: <ShieldAlert />, label: 'Emergency Fund' },
 ];
 
-function AppLayoutContent({ children }: { children: React.ReactNode }) {
+export default function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const { logout, profile, user } = useApp();
@@ -54,12 +53,11 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (authChecked && user) {
         const isOnboardingPage = pathname === '/onboarding';
-        const isLandingPage = pathname === '/';
         const hasCompletedOnboarding = profile && profile.role;
 
-        if (hasCompletedOnboarding && (isOnboardingPage || isLandingPage)) {
+        if (hasCompletedOnboarding && isOnboardingPage) {
             router.replace('/dashboard');
-        } else if (!hasCompletedOnboarding && !isOnboardingPage && !isLandingPage) {
+        } else if (!hasCompletedOnboarding && !isOnboardingPage && pathname !== '/') {
              router.replace('/onboarding');
         }
     }
@@ -73,12 +71,13 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
     );
   }
   
-  if (pathname === '/onboarding' || profile === null && !['/', '/login', '/signup'].includes(pathname)) {
-    return <>{children}</>;
+  const isPublicPage = ['/login', '/signup', '/'].includes(pathname);
+  if (isPublicPage || (user && !profile?.role && pathname !== '/onboarding')) {
+      return <>{children}</>
   }
-
-  if (['/', '/login', '/signup', '/onboarding'].includes(pathname)) {
-    return <>{children}</>
+  
+  if (pathname === '/onboarding') {
+    return <>{children}</>;
   }
 
 
@@ -140,12 +139,4 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
       </div>
     </SidebarProvider>
   );
-}
-
-export default function AppLayout({ children }: { children: React.ReactNode }) {
-    return (
-        <AppProvider>
-            <AppLayoutContent>{children}</AppLayoutContent>
-        </AppProvider>
-    )
 }
