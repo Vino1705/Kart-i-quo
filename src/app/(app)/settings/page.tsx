@@ -31,7 +31,7 @@ const fixedExpenseSchema = z.object({
 });
 
 const profileSchema = z.object({
-  name: z.string().optional(),
+  name: z.string().min(1, 'Please enter your name'),
   role: z.enum(['Student', 'Professional', 'Housewife']),
   income: z.coerce.number().min(0, 'Income cannot be negative'),
   fixedExpenses: z.array(fixedExpenseSchema).optional(),
