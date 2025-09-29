@@ -28,7 +28,7 @@ const SpendingAlertsInputSchema = z.object({
 export type SpendingAlertsInput = z.infer<typeof SpendingAlertsInputSchema>;
 
 const SpendingAlertsOutputSchema = z.object({
-  alerts: z.string().describe('Proactive alerts based on spending trends.'),
+  suggestion: z.string().describe('A suggestion for the next week based on spending trends.'),
 });
 export type SpendingAlertsOutput = z.infer<typeof SpendingAlertsOutputSchema>;
 
@@ -40,7 +40,7 @@ const prompt = ai.definePrompt({
   name: 'spendingAlertsPrompt',
   input: {schema: SpendingAlertsInputSchema},
   output: {schema: SpendingAlertsOutputSchema},
-  prompt: `You are Kwik Kash's proactive financial analyst. Your job is to analyze a user's spending habits and provide a concise, actionable alert to help them improve.
+  prompt: `You are Kwik Kash's proactive financial analyst. Your job is to analyze a user's spending habits and provide a concise, actionable suggestion for the next week.
 
 ## User's Financial Profile:
 - **Monthly Income:** ₹{{{income}}}
@@ -57,16 +57,16 @@ const prompt = ai.definePrompt({
 {{/each}}
 
 ## Your Task:
-Based on all the information above, generate a single, concise, and actionable alert.
+Based on all the information above, generate a single, concise, and actionable suggestion for the upcoming week.
 
-1.  **Analyze Spending Patterns:** Look at the user's recent spending. Identify the top 1-2 categories where they spend the most. Note any unusually high spending.
-2.  **Compare to Goals:** Assess if the current spending patterns are sustainable given their savings goals. Is high discretionary spending in one area jeopardizing their ability to meet their monthly contribution targets?
-3.  **Create Proactive Alert:** Generate a single, friendly, and encouraging alert. The alert should highlight a specific spending habit and connect it to a potential impact on a financial goal. Be specific.
+1.  **Analyze Spending Patterns:** Look at the user's recent spending. Identify the single category where they spend the most.
+2.  **Connect to Goals:** Briefly mention how adjusting this spending can help them reach a goal faster.
+3.  **Create a Forward-Looking Suggestion:** Generate a friendly and encouraging suggestion for the next week. It should recommend a small, achievable adjustment in their top spending category.
 
-**Good Alert Example:** "Your spending on 'Food & Dining' has been 20% higher than average this week. Scaling this back just a little could help you reach your 'New Laptop' goal faster!"
-**Bad Alert Example:** "You are spending too much money."
+**Good Suggestion Example:** "To help you reach your 'New Laptop' goal faster, try reducing your 'Food & Dining' expenses by just 10% this coming week. Small changes make a big difference!"
+**Bad Suggestion Example:** "You are spending too much money."
 
-Now, generate the 'alerts' field based on your analysis of the user's data.`,
+Now, generate the 'suggestion' field based on your analysis of the user's data.`,
 });
 
 const spendingAlertsFlow = ai.defineFlow(
@@ -85,10 +85,11 @@ const spendingAlertsFlow = ai.defineFlow(
     } catch (error) {
       console.error('Error in spendingAlertsFlow:', error);
       return {
-        alerts: 'The AI service is temporarily unavailable. Please try again later.',
+        suggestion: 'The AI service is temporarily unavailable. Please try again later.',
       };
     }
   }
 );
+
 
 

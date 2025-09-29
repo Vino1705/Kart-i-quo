@@ -13,7 +13,7 @@ import { subDays, isAfter } from 'date-fns';
 
 export function SpendingForecast() {
   const { profile, goals, transactions } = useApp();
-  const [forecast, setForecast] = useState<{ predictedLimit: string; alerts: string } | null>(null);
+  const [forecast, setForecast] = useState<{ predictedLimit: string; suggestion: string } | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
@@ -60,7 +60,7 @@ export function SpendingForecast() {
       const result = await getSpendingAlerts(input);
       setForecast({
         predictedLimit,
-        alerts: result.alerts,
+        suggestion: result.suggestion,
       });
 
     } catch (error) {
@@ -82,18 +82,18 @@ export function SpendingForecast() {
           <BrainCircuit className="h-5 w-5 text-primary"/>
           AI Spending Forecast
         </CardTitle>
-        <CardDescription>Get AI-powered predictions on your future spending habits and receive proactive alerts.</CardDescription>
+        <CardDescription>Get AI-powered predictions on your future spending habits and receive proactive suggestions.</CardDescription>
       </CardHeader>
       <CardContent>
         {forecast && (
           <div className="space-y-4 mb-6">
             <Alert>
-              <AlertTitle className="font-semibold">Predicted Spending Limit</AlertTitle>
+              <AlertTitle className="font-semibold">Recommended Daily Limit</AlertTitle>
               <AlertDescription>{forecast.predictedLimit}</AlertDescription>
             </Alert>
-            <Alert variant="destructive">
-              <AlertTitle className="font-semibold">Proactive Alerts</AlertTitle>
-              <AlertDescription>{forecast.alerts}</AlertDescription>
+            <Alert variant="default">
+              <AlertTitle className="font-semibold">Weekly Suggestion</AlertTitle>
+              <AlertDescription>{forecast.suggestion}</AlertDescription>
             </Alert>
           </div>
         )}
