@@ -51,4 +51,7 @@ export const expenseCategories = [
   'Other',
 ];
 
+// Represents a record of which month a payment was logged for a specific expense.
+// e.g., { "expense-id-123": ["2024-01", "2024-02"] }
+export type LoggedPayments = Record<string, string[]>;
     

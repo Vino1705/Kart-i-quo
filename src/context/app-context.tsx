@@ -2,7 +2,7 @@
 "use client";
 
 import React, { createContext, useState, ReactNode, useEffect } from 'react';
-import type { UserProfile, Goal, Transaction, FixedExpense } from '@/lib/types';
+import type { UserProfile, Goal, Transaction, FixedExpense, LoggedPayments } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import { getAuth, signOut } from 'firebase/auth';
 import firebaseApp from '@/lib/firebase';
@@ -26,7 +26,8 @@ interface AppContextType {
   contributeToGoal: (goalId: string, amount: number) => void;
   getCumulativeDailySavings: () => number;
   toggleFixedExpenseLoggedStatus: (expenseId: string) => void;
-  getLoggedFixedExpensesForMonth: () => string[];
+  isFixedExpenseLoggedForCurrentMonth: (expenseId: string) => boolean;
+  getLoggedPaymentCount: (expenseId: string) => number;
 }
 
 export const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -54,7 +55,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [goals, setGoals] = useState<Goal[]>([]);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [loggedFixedExpenses, setLoggedFixedExpenses] = useState<Record<string, string[]>>({});
+  const [loggedPayments, setLoggedPayments] = useState<LoggedPayments>({});
   const [onboardingComplete, setOnboardingComplete] = useState(false);
 
   useEffect(() => {
@@ -63,7 +64,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       const storedProfile = localStorage.getItem('kwik-kash-profile');
       const storedGoals = localStorage.getItem('kwik-kash-goals');
       const storedTransactions = localStorage.getItem('kwik-kash-transactions');
-      const storedLoggedFixed = localStorage.getItem('kwik-kash-logged-fixed');
+      const storedLoggedPayments = localStorage.getItem('kwik-kash-logged-payments');
 
       if (storedProfile) {
         const parsedProfile: UserProfile = JSON.parse(storedProfile);
@@ -112,8 +113,8 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         setTransactions([initialTransaction]);
         persistState('kwik-kash-transactions', [initialTransaction]);
       }
-      if (storedLoggedFixed) {
-        setLoggedFixedExpenses(JSON.parse(storedLoggedFixed));
+      if (storedLoggedPayments) {
+        setLoggedPayments(JSON.parse(storedLoggedPayments));
       }
 
     } catch (error) {
@@ -271,33 +272,38 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     });
   };
 
-  const getLoggedFixedExpensesForMonth = () => {
+  const isFixedExpenseLoggedForCurrentMonth = (expenseId: string) => {
     const currentMonthKey = format(new Date(), 'yyyy-MM');
-    return loggedFixedExpenses[currentMonthKey] || [];
+    return loggedPayments[expenseId]?.includes(currentMonthKey) || false;
+  };
+  
+  const getLoggedPaymentCount = (expenseId: string) => {
+    return loggedPayments[expenseId]?.length || 0;
   };
 
   const toggleFixedExpenseLoggedStatus = (expenseId: string) => {
     const currentMonthKey = format(new Date(), 'yyyy-MM');
-    const monthlyLogs = loggedFixedExpenses[currentMonthKey] || [];
-    const isLogged = monthlyLogs.includes(expenseId);
-
-    let newMonthlyLogs;
+    const existingLogs = loggedPayments[expenseId] || [];
+    const isLogged = existingLogs.includes(currentMonthKey);
+    
+    let newLogs;
     if (isLogged) {
-      newMonthlyLogs = monthlyLogs.filter(id => id !== expenseId);
+      newLogs = existingLogs.filter(month => month !== currentMonthKey);
       toast({ title: 'Expense marked as unpaid.' });
     } else {
-      newMonthlyLogs = [...monthlyLogs, expenseId];
+      newLogs = [...existingLogs, currentMonthKey];
       toast({ title: 'Expense marked as paid.' });
     }
 
-    const updatedLoggedExpenses = {
-      ...loggedFixedExpenses,
-      [currentMonthKey]: newMonthlyLogs,
+    const updatedLoggedPayments = {
+      ...loggedPayments,
+      [expenseId]: newLogs,
     };
     
-    setLoggedFixedExpenses(updatedLoggedExpenses);
-    persistState('kwik-kash-logged-fixed', updatedLoggedExpenses);
-  }
+    setLoggedPayments(updatedLoggedPayments);
+    persistState('kwik-kash-logged-payments', updatedLoggedPayments);
+  };
+
 
   const logout = async () => {
     const auth = getAuth(firebaseApp);
@@ -331,10 +337,9 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     contributeToGoal,
     getCumulativeDailySavings,
     toggleFixedExpenseLoggedStatus,
-    getLoggedFixedExpensesForMonth,
+    isFixedExpenseLoggedForCurrentMonth,
+    getLoggedPaymentCount,
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 }
-
-    

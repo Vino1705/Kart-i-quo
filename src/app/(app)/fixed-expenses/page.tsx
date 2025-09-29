@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Info, Target, CheckCircle, RotateCcw } from 'lucide-react';
-import { isAfter, addMonths, format, differenceInMonths } from 'date-fns';
+import { isAfter, addMonths, format, differenceInMonths, parseISO } from 'date-fns';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
@@ -23,11 +23,9 @@ const COLORS = [
 ];
 
 export default function FixedExpensesPage() {
-  const { profile, toggleFixedExpenseLoggedStatus, getLoggedFixedExpensesForMonth } = useApp();
+  const { profile, toggleFixedExpenseLoggedStatus, isFixedExpenseLoggedForCurrentMonth, getLoggedPaymentCount } = useApp();
   const fixedExpenses = profile?.fixedExpenses || [];
   
-  const loggedExpenseIds = getLoggedFixedExpensesForMonth();
-
   const chartData = useMemo(() => {
     return fixedExpenses.map(exp => ({ name: exp.name, value: exp.amount }));
   }, [fixedExpenses]);
@@ -89,7 +87,7 @@ export default function FixedExpensesPage() {
                 </TableHeader>
                 <TableBody>
                   {fixedExpenses.map(exp => {
-                    const isLogged = loggedExpenseIds.includes(exp.id);
+                    const isLogged = isFixedExpenseLoggedForCurrentMonth(exp.id);
                     return (
                       <TableRow key={exp.id}>
                         <TableCell className="font-medium">{exp.name}</TableCell>
@@ -191,25 +189,27 @@ export default function FixedExpensesPage() {
                 {fixedExpenses.filter(e => e.timelineMonths).length > 0 ? fixedExpenses.filter(e => e.timelineMonths).map(exp => {
                     if (!exp.startDate || !exp.timelineMonths) return null;
                     
-                    const startDate = new Date(exp.startDate);
+                    const startDate = parseISO(exp.startDate);
                     const endDate = addMonths(startDate, exp.timelineMonths);
                     const totalMonths = exp.timelineMonths;
-                    const elapsedMonths = differenceInMonths(new Date(), startDate);
+                    const elapsedMonths = getLoggedPaymentCount(exp.id);
                     const remainingMonths = totalMonths - elapsedMonths;
                     const progress = (elapsedMonths / totalMonths) * 100;
 
-                    if (remainingMonths <= 0) return null;
+                    if (remainingMonths < 0) return null; // Already finished
 
                     return (
                         <div key={exp.id}>
                             <div className="flex justify-between items-center mb-1">
                                 <span className="font-medium">{exp.name}</span>
                                 <span className="text-sm text-muted-foreground">
-                                    {remainingMonths} / {totalMonths} months left
+                                    {elapsedMonths} / {totalMonths} months paid
                                 </span>
                             </div>
                             <Progress value={progress} className="h-2.5" />
-                            <p className="text-xs text-right mt-1 text-muted-foreground">Ends on {format(endDate, 'MMM yyyy')}</p>
+                            <p className="text-xs text-right mt-1 text-muted-foreground">
+                              {remainingMonths > 0 ? `${remainingMonths} months left. Ends on ${format(endDate, 'MMM yyyy')}` : "Completed!"}
+                            </p>
                         </div>
                     );
                 }) : (
@@ -226,7 +226,3 @@ export default function FixedExpensesPage() {
     </div>
   );
 }
-
-    
-
-    
