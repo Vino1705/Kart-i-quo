@@ -2,7 +2,7 @@
 "use client";
 
 import React, { createContext, useState, ReactNode, useEffect } from 'react';
-import type { UserProfile, Goal, Transaction, FixedExpense, LoggedPayments } from '@/lib/types';
+import type { UserProfile, Goal, Transaction, FixedExpense, LoggedPayments, Contribution } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import { getAuth, signOut } from 'firebase/auth';
 import firebaseApp from '@/lib/firebase';
@@ -15,7 +15,7 @@ interface AppContextType {
   transactions: Transaction[];
   onboardingComplete: boolean;
   updateProfile: (profile: Partial<Omit<UserProfile, 'monthlyNeeds' | 'monthlyWants' | 'monthlySavings' | 'dailySpendingLimit'>>) => void;
-  addGoal: (goal: Omit<Goal, 'id' | 'currentAmount'>) => void;
+  addGoal: (goal: Omit<Goal, 'id' | 'currentAmount' | 'contributions'>) => void;
   addTransaction: (transaction: Omit<Transaction, 'id' | 'date'>) => void;
   updateGoal: (goalId: string, updatedGoal: Partial<Omit<Goal, 'id'>>) => void;
   getTodaysSpending: () => number;
@@ -87,6 +87,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         setGoals(JSON.parse(storedGoals));
       } else {
         // Set initial goal for demo purposes if none exist
+        const initialContribution: Contribution = { amount: 5000, date: new Date().toISOString() };
         const initialGoal: Goal = {
           id: '1',
           name: 'New Laptop',
@@ -95,6 +96,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
           monthlyContribution: 5000,
           timelineMonths: 16,
           startDate: formatISO(new Date()),
+          contributions: [initialContribution],
         };
         setGoals([initialGoal]);
         persistState('kwik-kash-goals', [initialGoal]);
@@ -152,12 +154,13 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     persistState('kwik-kash-profile', updatedProfile);
   };
 
-  const addGoal = (goalData: Omit<Goal, 'id' | 'currentAmount'>) => {
+  const addGoal = (goalData: Omit<Goal, 'id' | 'currentAmount' | 'contributions'>) => {
     const newGoal: Goal = {
       ...goalData,
       id: Date.now().toString(),
       currentAmount: 0,
       startDate: goalData.timelineMonths ? formatISO(new Date()) : undefined,
+      contributions: [],
     };
     const newGoals = [...goals, newGoal];
     setGoals(newGoals);
@@ -257,10 +260,19 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const contributeToGoal = (goalId: string, amount: number) => {
+    const newContribution: Contribution = {
+        amount,
+        date: new Date().toISOString(),
+    };
+
     const newGoals = goals.map(goal => {
       if (goal.id === goalId) {
         const newCurrentAmount = goal.currentAmount + amount;
-        return { ...goal, currentAmount: newCurrentAmount > goal.targetAmount ? goal.targetAmount : newCurrentAmount };
+        return { 
+            ...goal, 
+            currentAmount: newCurrentAmount > goal.targetAmount ? goal.targetAmount : newCurrentAmount,
+            contributions: [newContribution, ...(goal.contributions || [])],
+         };
       }
       return goal;
     });

@@ -20,6 +20,11 @@ export interface FixedExpense {
   startDate?: string; // Should be an ISO string
 }
 
+export interface Contribution {
+    amount: number;
+    date: string; // ISO string
+}
+
 export interface Goal {
   id:string;
   name: string;
@@ -28,6 +33,7 @@ export interface Goal {
   monthlyContribution: number;
   timelineMonths: number;
   startDate?: string;
+  contributions: Contribution[];
 }
 
 export interface Transaction {

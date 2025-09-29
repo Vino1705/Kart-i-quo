@@ -12,13 +12,15 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Input } from '@/components/ui/input';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Progress } from '@/components/ui/progress';
-import { PlusCircle, Target, Pencil, Wallet, Clock } from 'lucide-react';
+import { PlusCircle, Target, Pencil, Wallet, Clock, History } from 'lucide-react';
 import { Goal } from '@/lib/types';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip, Legend } from 'recharts';
 import { useToast } from '@/hooks/use-toast';
 import { Label } from '@/components/ui/label';
 import { differenceInMonths, addMonths, format } from 'date-fns';
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 
 const goalSchema = z.object({
@@ -219,6 +221,46 @@ function ContributeDialog({ goal, children }: { goal: Goal, children: React.Reac
     )
 }
 
+function HistorySheet({ goal }: { goal: Goal }) {
+  return (
+    <Sheet>
+      <SheetTrigger asChild>
+        <Button variant="outline" size="sm">
+          <History className="mr-2 h-4 w-4" />
+          History
+        </Button>
+      </SheetTrigger>
+      <SheetContent>
+        <SheetHeader>
+          <SheetTitle>Contribution History for '{goal.name}'</SheetTitle>
+          <SheetDescription>A log of all contributions made towards this goal.</SheetDescription>
+        </SheetHeader>
+        <ScrollArea className="h-[calc(100%-80px)] mt-4">
+            <div className="space-y-3 pr-4">
+            {(goal.contributions && goal.contributions.length > 0) ? (
+                goal.contributions.map((c, index) => (
+                <div key={index} className="flex justify-between items-center rounded-md border p-3">
+                    <div>
+                    <p className="font-medium">₹{c.amount.toFixed(2)}</p>
+                    <p className="text-xs text-muted-foreground">
+                        {format(new Date(c.date), 'PPP p')}
+                    </p>
+                    </div>
+                    <div className="text-sm text-green-500 font-semibold">
+                        Contributed
+                    </div>
+                </div>
+                ))
+            ) : (
+                <p className="text-muted-foreground text-center py-8">No contributions yet.</p>
+            )}
+            </div>
+        </ScrollArea>
+      </SheetContent>
+    </Sheet>
+  );
+}
+
 export default function GoalsPage() {
   const { goals } = useApp();
   
@@ -332,12 +374,13 @@ export default function GoalsPage() {
                     }
                   </p>
                 </CardContent>
-                <CardFooter>
+                <CardFooter className="flex gap-2">
                     <ContributeDialog goal={goal}>
-                        <Button className="w-full">
+                        <Button className="flex-1">
                             <Wallet className="mr-2 h-4 w-4" /> Contribute
                         </Button>
                     </ContributeDialog>
+                    <HistorySheet goal={goal} />
                 </CardFooter>
               </Card>
             );
