@@ -49,7 +49,7 @@ export default function ExpensesPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold font-headline">Expense Analysis</h1>
+        <h1 className="text-2xl font-bold">Expense Analysis</h1>
          <Tabs value={timeRange} onValueChange={setTimeRange}>
           <TabsList>
             <TabsTrigger value="all">All Time</TabsTrigger>
@@ -62,7 +62,7 @@ export default function ExpensesPage() {
       <div className="grid gap-8 md:grid-cols-5">
         <Card className="md:col-span-3">
           <CardHeader>
-            <CardTitle className="font-headline">Category Spending</CardTitle>
+            <CardTitle>Category Spending</CardTitle>
             <CardDescription>Comparing your spending across categories.</CardDescription>
           </CardHeader>
           <CardContent>
@@ -127,7 +127,7 @@ export default function ExpensesPage() {
                         <TableCell>
                             <Badge variant="secondary">{t.category}</Badge>
                         </TableCell>
-                        <TableCell className="text-right font-numeric">₹{t.amount.toFixed(2)}</TableCell>
+                        <TableCell className="text-right">₹{t.amount.toFixed(2)}</TableCell>
                         </TableRow>
                     ))}
                     </TableBody>

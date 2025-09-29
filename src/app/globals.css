@@ -66,8 +66,4 @@
   body {
     @apply bg-background text-foreground;
   }
-
-  .font-numeric {
-    font-family: var(--font-share-tech-mono);
-  }
 }

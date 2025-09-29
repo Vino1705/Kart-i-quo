@@ -1,25 +1,14 @@
 import type { Metadata } from 'next';
 import { Toaster } from "@/components/ui/toaster"
 import './globals.css';
-import { Montserrat, Nunito, Share_Tech_Mono } from 'next/font/google';
+import { Nunito } from 'next/font/google';
 import { cn } from '@/lib/utils';
 import { AppProvider } from '@/context/app-context';
-
-const montserrat = Montserrat({
-  subsets: ['latin'],
-  variable: '--font-montserrat',
-  weight: '800',
-});
+import AppLayoutContent from './(app)/app-layout';
 
 const nunito = Nunito({
   subsets: ['latin'],
   variable: '--font-nunito',
-});
-
-const shareTechMono = Share_Tech_Mono({
-  subsets: ['latin'],
-  variable: '--font-share-tech-mono',
-  weight: '400',
 });
 
 
@@ -37,12 +26,12 @@ export default function RootLayout({
     <html lang="en" className="dark">
       <body className={cn(
         "font-body antialiased",
-        montserrat.variable,
-        nunito.variable,
-        shareTechMono.variable
+        nunito.variable
       )}>
         <AppProvider>
-            {children}
+            <AppLayoutContent>
+                {children}
+            </AppLayoutContent>
         </AppProvider>
         <Toaster />
       </body>

@@ -54,7 +54,7 @@ export function EndOfDaySummary() {
                 </div>
              )}
           </div>
-          <DialogTitle className="text-center font-headline text-2xl">
+          <DialogTitle className="text-center text-2xl">
             {isOverBudget ? "Budget Exceeded" : "Great Job Today!"}
           </DialogTitle>
           <DialogDescription className="text-center">
@@ -66,7 +66,7 @@ export function EndOfDaySummary() {
         </DialogHeader>
         <div className="space-y-4 py-4">
             <div className="space-y-2">
-                 <div className="flex justify-between font-medium font-numeric">
+                 <div className="flex justify-between font-medium">
                     <span>Spent Today</span>
                     <span>₹{todaysSpending.toFixed(2)} / ₹{dailyLimit.toFixed(2)}</span>
                 </div>
@@ -75,7 +75,7 @@ export function EndOfDaySummary() {
 
             <div className={`flex items-center justify-center gap-2 p-3 rounded-lg ${isOverBudget ? 'bg-destructive/10 text-destructive' : 'bg-green-500/10 text-green-600'}`}>
                 {isOverBudget ? <TrendingDown className="h-5 w-5" /> : <TrendingUp className="h-5 w-5" />}
-                <p className="font-bold text-lg font-numeric">
+                <p className="font-bold text-lg">
                     {isOverBudget ? `₹${Math.abs(remaining).toFixed(2)} Over Budget` : `₹${savedAmount.toFixed(2)} Saved`}
                 </p>
             </div>

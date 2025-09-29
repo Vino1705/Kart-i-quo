@@ -78,7 +78,7 @@ export function SpendingForecast() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="font-headline flex items-center gap-2">
+        <CardTitle className="flex items-center gap-2">
           <BrainCircuit className="h-5 w-5 text-primary"/>
           AI Spending Forecast
         </CardTitle>

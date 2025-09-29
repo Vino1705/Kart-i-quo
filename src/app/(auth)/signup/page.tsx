@@ -52,7 +52,7 @@ export default function SignupPage() {
     <Card className="w-full max-w-sm">
       <CardHeader className="text-center">
         <Logo className="mx-auto h-10 w-10" />
-        <CardTitle className="mt-4 font-headline">Create an Account</CardTitle>
+        <CardTitle className="mt-4">Create an Account</CardTitle>
         <CardDescription>Get started with Kart-i-quo for free</CardDescription>
       </CardHeader>
       <CardContent>

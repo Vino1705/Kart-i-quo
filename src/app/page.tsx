@@ -85,7 +85,7 @@ export default function LandingPage() {
         <section className="container grid items-center gap-6 pb-8 pt-6 md:py-10">
           <div className="grid grid-cols-1 items-center gap-8 md:grid-cols-2">
             <div className="flex flex-col items-start gap-4">
-              <h1 className="text-3xl font-extrabold leading-tight tracking-tighter sm:text-3xl md:text-5xl lg:text-6xl font-headline">
+              <h1 className="text-3xl font-extrabold leading-tight tracking-tighter sm:text-3xl md:text-5xl lg:text-6xl">
                 Master Your Money, <br className="hidden sm:inline" />
                 Effortlessly.
               </h1>
@@ -116,7 +116,7 @@ export default function LandingPage() {
         <section id="features" className="bg-secondary py-12 md:py-24">
           <div className="container">
             <div className="mx-auto mb-12 max-w-2xl text-center">
-              <h2 className="text-3xl font-bold tracking-tight md:text-4xl font-headline">
+              <h2 className="text-3xl font-bold tracking-tight md:text-4xl">
                 Your Personal Financial Coach
               </h2>
               <p className="mt-4 text-lg text-muted-foreground">
@@ -143,7 +143,7 @@ export default function LandingPage() {
 
         <section className="container py-12 md:py-24">
            <div className="mx-auto max-w-4xl rounded-lg bg-primary p-8 text-center text-primary-foreground md:p-12">
-            <h2 className="text-3xl font-bold md:text-4xl font-headline">Ready to transform your financial future?</h2>
+            <h2 className="text-3xl font-bold md:text-4xl">Ready to transform your financial future?</h2>
             <p className="mt-4 text-lg text-primary-foreground/80">
               Join Kart-i-quo today and start your journey towards financial freedom.
             </p>

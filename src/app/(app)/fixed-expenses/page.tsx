@@ -47,7 +47,7 @@ export default function FixedExpensesPage() {
   return (
     <div className="space-y-6">
         <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-bold font-headline">Your Fixed Expenses</h1>
+            <h1 className="text-2xl font-bold">Your Fixed Expenses</h1>
             <Button asChild>
                 <Link href="/settings">Edit Expenses</Link>
             </Button>
@@ -92,7 +92,7 @@ export default function FixedExpensesPage() {
                       <TableRow key={exp.id}>
                         <TableCell className="font-medium">{exp.name}</TableCell>
                         <TableCell><Badge variant="secondary">{exp.category}</Badge></TableCell>
-                        <TableCell className="font-numeric">₹{exp.amount.toFixed(2)}</TableCell>
+                        <TableCell>₹{exp.amount.toFixed(2)}</TableCell>
                         <TableCell className="text-right">
                           <Button
                             size="sm"
@@ -129,7 +129,7 @@ export default function FixedExpensesPage() {
       <div className="grid gap-8 md:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle className="font-headline">Expenses Breakdown</CardTitle>
+            <CardTitle>Expenses Breakdown</CardTitle>
             <CardDescription>How your fixed costs are distributed.</CardDescription>
           </CardHeader>
           <CardContent>
@@ -202,7 +202,7 @@ export default function FixedExpensesPage() {
                         <div key={exp.id}>
                             <div className="flex justify-between items-center mb-1">
                                 <span className="font-medium">{exp.name}</span>
-                                <span className="text-sm text-muted-foreground font-numeric">
+                                <span className="text-sm text-muted-foreground">
                                     {elapsedMonths} / {totalMonths} months paid
                                 </span>
                             </div>

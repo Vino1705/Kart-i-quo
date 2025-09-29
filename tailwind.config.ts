@@ -18,8 +18,6 @@ export default {
     extend: {
       fontFamily: {
         body: ['var(--font-nunito)', 'sans-serif'],
-        headline: ['var(--font-montserrat)', 'sans-serif'],
-        code: ['var(--font-share-tech-mono)', 'monospace'],
       },
       colors: {
         background: 'hsl(var(--background))',

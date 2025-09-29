@@ -85,7 +85,7 @@ function GoalDialog({ goal, children }: { goal?: Goal, children: React.ReactNode
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle className="font-headline">{isEditMode ? 'Edit Goal' : 'Set a New Goal'}</DialogTitle>
+          <DialogTitle>{isEditMode ? 'Edit Goal' : 'Set a New Goal'}</DialogTitle>
           <DialogDescription>
             {isEditMode ? 'Update your savings goal details.' : "What are you saving for? Let's make a plan."}
           </DialogDescription>
@@ -151,7 +151,7 @@ function GoalDialog({ goal, children }: { goal?: Goal, children: React.ReactNode
                 <AlertDescription>
                     <p>{suggestion}</p>
                     { availableSavings >= 0 ?
-                        <p className="font-medium mt-2 font-numeric">Available for Goals: ₹{availableSavings.toFixed(2)} / month</p>
+                        <p className="font-medium mt-2">Available for Goals: ₹{availableSavings.toFixed(2)} / month</p>
                         :
                         <p className="font-medium mt-2 text-destructive">You've committed all your savings.</p>
                     }
@@ -208,7 +208,7 @@ function ContributeDialog({ goal, children }: { goal: Goal, children: React.Reac
                      <Alert variant="default">
                         <Wallet className="h-4 w-4" />
                         <AlertDescription>
-                            Your remaining emergency fund savings after this contribution would be approximately <span className="font-numeric">₹{(emergencyFund - amount).toFixed(2)}</span>.
+                            Your remaining emergency fund savings after this contribution would be approximately <span>₹{(emergencyFund - amount).toFixed(2)}</span>.
                         </AlertDescription>
                     </Alert>
                 </div>
@@ -241,7 +241,7 @@ function HistorySheet({ goal }: { goal: Goal }) {
                 goal.contributions.map((c, index) => (
                 <div key={index} className="flex justify-between items-center rounded-md border p-3">
                     <div>
-                    <p className="font-medium font-numeric">₹{c.amount.toFixed(2)}</p>
+                    <p className="font-medium">₹{c.amount.toFixed(2)}</p>
                     <p className="text-xs text-muted-foreground">
                         {format(new Date(c.date), 'PPP p')}
                     </p>
@@ -275,7 +275,7 @@ export default function GoalsPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between gap-4 flex-wrap">
-        <h1 className="text-2xl font-bold font-headline">Your Financial Goals</h1>
+        <h1 className="text-2xl font-bold">Your Financial Goals</h1>
         <div className="flex gap-2">
             <GoalDialog>
                 <Button>
@@ -344,7 +344,7 @@ export default function GoalsPage() {
                              </Button>
                          </GoalDialog>
                     </div>
-                  <CardDescription className="font-numeric">
+                  <CardDescription>
                     ₹{goal.currentAmount.toFixed(2)} saved of ₹{goal.targetAmount.toFixed(2)}
                   </CardDescription>
                 </CardHeader>
@@ -352,7 +352,7 @@ export default function GoalsPage() {
                   <div>
                     <div className="flex justify-between text-sm mb-1">
                         <span className="text-muted-foreground">Amount Saved</span>
-                        <span className="font-numeric">{amountProgress.toFixed(1)}%</span>
+                        <span>{amountProgress.toFixed(1)}%</span>
                     </div>
                     <Progress value={amountProgress} className="w-full h-2" />
                   </div>
@@ -361,7 +361,7 @@ export default function GoalsPage() {
                      <div>
                         <div className="flex justify-between text-sm mb-1">
                             <span className="text-muted-foreground">Timeline</span>
-                            <span className="font-numeric">{elapsedMonths} of {goal.timelineMonths} months</span>
+                            <span>{elapsedMonths} of {goal.timelineMonths} months</span>
                         </div>
                         <Progress value={timeProgress} className="w-full h-2" />
                      </div>
