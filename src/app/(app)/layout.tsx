@@ -1,7 +1,7 @@
 
 "use client";
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
@@ -14,7 +14,7 @@ import {
   CreditCard,
   ShieldAlert,
 } from 'lucide-react';
-import { onAuthStateChanged, getAuth } from 'firebase/auth';
+import { onAuthStateChanged, getAuth, User } from 'firebase/auth';
 import firebaseApp from '@/lib/firebase';
 import { AppProvider } from '@/context/app-context';
 import { useApp } from '@/hooks/use-app';
@@ -35,36 +35,41 @@ const navItems = [
 function AppLayoutContent({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
-  const { logout, profile } = useApp();
+  const { logout, profile, user } = useApp();
   const auth = getAuth(firebaseApp);
+  const [authChecked, setAuthChecked] = useState(false);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, user => {
-      const isOnboardingPage = pathname === '/onboarding';
-      if (!user) {
-        if (!isOnboardingPage) {
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+        if (!currentUser && !['/login', '/signup'].includes(pathname)) {
             router.replace('/login');
+        } else {
+            setAuthChecked(true);
         }
-      } else {
-        if (profile === null && !isOnboardingPage) {
-           router.replace('/onboarding');
-        } else if (profile && !profile.role && !isOnboardingPage) {
-           router.replace('/onboarding');
-        } else if (profile && profile.role && isOnboardingPage) {
-          router.replace('/dashboard');
-        }
-      }
     });
 
     return () => unsubscribe();
-  }, [profile, pathname, router, auth]);
+  }, [pathname, router, auth]);
 
-  if (profile === undefined) {
-     return (
-        <div className="flex h-screen items-center justify-center">
-            <p>Loading your profile...</p>
-        </div>
-     );
+  useEffect(() => {
+    if (authChecked && user) {
+        const isOnboardingPage = pathname === '/onboarding';
+        const hasCompletedOnboarding = profile && profile.role;
+
+        if (!hasCompletedOnboarding && !isOnboardingPage) {
+            router.replace('/onboarding');
+        } else if (hasCompletedOnboarding && isOnboardingPage) {
+            router.replace('/dashboard');
+        }
+    }
+  }, [profile, user, pathname, router, authChecked]);
+
+  if (!authChecked || (user && profile === undefined)) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <p>Loading your experience...</p>
+      </div>
+    );
   }
   
   if (pathname === '/onboarding' || profile === null) {

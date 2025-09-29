@@ -11,7 +11,7 @@ import { format, formatISO, startOfDay, parseISO } from 'date-fns';
 
 interface AppContextType {
   user: User | null;
-  profile: UserProfile | null;
+  profile: UserProfile | null | undefined; // Allow undefined for initial loading state
   goals: Goal[];
   transactions: Transaction[];
   onboardingComplete: boolean;
@@ -69,7 +69,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   const { toast } = useToast();
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
-  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [profile, setProfile] = useState<UserProfile | null | undefined>(undefined); // Start as undefined
   const [goals, setGoals] = useState<Goal[]>([]);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loggedPayments, setLoggedPayments] = useState<LoggedPayments>({});
@@ -79,85 +79,57 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     const auth = getAuth(firebaseApp);
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
         setUser(currentUser);
+        if (currentUser) {
+            // User is signed in, load their data
+             try {
+                const hasNewData = !!localStorage.getItem(PROFILE_KEY);
+                if (!hasNewData) {
+                    const oldProfile = localStorage.getItem(OLD_PROFILE_KEY);
+                    if (oldProfile) localStorage.setItem(PROFILE_KEY, oldProfile);
+                    const oldGoals = localStorage.getItem(OLD_GOALS_KEY);
+                    if (oldGoals) localStorage.setItem(GOALS_KEY, oldGoals);
+                    const oldTransactions = localStorage.getItem(OLD_TRANSACTIONS_KEY);
+                    if (oldTransactions) localStorage.setItem(TRANSACTIONS_KEY, oldTransactions);
+                    const oldLoggedPayments = localStorage.getItem(OLD_LOGGED_PAYMENTS_KEY);
+                    if (oldLoggedPayments) localStorage.setItem(LOGGED_PAYMENTS_KEY, oldLoggedPayments);
+                }
+
+                const storedProfile = localStorage.getItem(PROFILE_KEY);
+                if (storedProfile) {
+                    let parsedProfile: UserProfile = JSON.parse(storedProfile);
+                    const budget = calculateBudget(parsedProfile.income, parsedProfile.fixedExpenses);
+                    const updatedProfile = { 
+                        ...parsedProfile, 
+                        emergencyFund: parsedProfile.emergencyFund || { target: 0, current: 0, history: [] },
+                        ...budget 
+                    };
+                    setProfile(updatedProfile);
+                    setOnboardingComplete(!!updatedProfile.role);
+                } else {
+                    setProfile(null); // Explicitly set to null if no profile exists
+                }
+
+                const storedGoals = localStorage.getItem(GOALS_KEY);
+                setGoals(storedGoals ? JSON.parse(storedGoals) : []);
+                const storedTransactions = localStorage.getItem(TRANSACTIONS_KEY);
+                setTransactions(storedTransactions ? JSON.parse(storedTransactions) : []);
+                const storedLoggedPayments = localStorage.getItem(LOGGED_PAYMENTS_KEY);
+                setLoggedPayments(storedLoggedPayments ? JSON.parse(storedLoggedPayments) : {});
+
+            } catch (error) {
+                console.error("Failed to load data from localStorage", error);
+                setProfile(null);
+            }
+        } else {
+            // User is signed out, clear data
+            setProfile(null);
+            setGoals([]);
+            setTransactions([]);
+            setLoggedPayments({});
+            setOnboardingComplete(false);
+        }
     });
     return () => unsubscribe();
-  }, []);
-
-
-  useEffect(() => {
-    try {
-      // --- Data Migration Logic ---
-      const hasNewData = !!localStorage.getItem(PROFILE_KEY);
-      if (!hasNewData) {
-        const oldProfile = localStorage.getItem(OLD_PROFILE_KEY);
-        if (oldProfile) {
-          localStorage.setItem(PROFILE_KEY, oldProfile);
-          localStorage.removeItem(OLD_PROFILE_KEY);
-        }
-        const oldGoals = localStorage.getItem(OLD_GOALS_KEY);
-        if (oldGoals) {
-          localStorage.setItem(GOALS_KEY, oldGoals);
-          localStorage.removeItem(OLD_GOALS_KEY);
-        }
-        const oldTransactions = localStorage.getItem(OLD_TRANSACTIONS_KEY);
-        if (oldTransactions) {
-          localStorage.setItem(TRANSACTIONS_KEY, oldTransactions);
-          localStorage.removeItem(OLD_TRANSACTIONS_KEY);
-        }
-        const oldLoggedPayments = localStorage.getItem(OLD_LOGGED_PAYMENTS_KEY);
-        if (oldLoggedPayments) {
-          localStorage.setItem(LOGGED_PAYMENTS_KEY, oldLoggedPayments);
-          localStorage.removeItem(OLD_LOGGED_PAYMENTS_KEY);
-        }
-      }
-
-      // --- Regular Data Loading ---
-      const storedProfile = localStorage.getItem(PROFILE_KEY);
-      const storedGoals = localStorage.getItem(GOALS_KEY);
-      const storedTransactions = localStorage.getItem(TRANSACTIONS_KEY);
-      const storedLoggedPayments = localStorage.getItem(LOGGED_PAYMENTS_KEY);
-
-      if (storedProfile) {
-        let parsedProfile: UserProfile = JSON.parse(storedProfile);
-        
-        if (!parsedProfile.emergencyFund) {
-            parsedProfile.emergencyFund = {
-                target: 0,
-                current: 0,
-                history: [],
-            };
-        }
-        
-        const budget = calculateBudget(parsedProfile.income, parsedProfile.fixedExpenses);
-        const updatedProfile = { ...parsedProfile, ...budget };
-
-        if (JSON.stringify(parsedProfile) !== JSON.stringify(updatedProfile)) {
-          persistState(PROFILE_KEY, updatedProfile);
-        }
-        setProfile(updatedProfile);
-
-
-        if (updatedProfile && updatedProfile.role) {
-            setOnboardingComplete(true);
-        }
-      }
-      if (storedGoals) {
-        setGoals(JSON.parse(storedGoals));
-      } else {
-        setGoals([]);
-      }
-      if (storedTransactions) {
-        setTransactions(JSON.parse(storedTransactions));
-      } else {
-        setTransactions([]);
-      }
-      if (storedLoggedPayments) {
-        setLoggedPayments(JSON.parse(storedLoggedPayments));
-      }
-
-    } catch (error) {
-      console.error("Failed to load data from localStorage", error);
-    }
   }, []);
 
   const persistState = (key: string, value: any) => {
@@ -417,7 +389,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     }
   }
 
-  const value = {
+  const value: AppContextType = {
     user,
     profile,
     goals,
@@ -433,7 +405,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     deleteTransaction,
     getTotalGoalContributions,
     contributeToGoal,
-    getCumulativeDailySavings,
+getCumulativeDailySavings,
     toggleFixedExpenseLoggedStatus,
     isFixedExpenseLoggedForCurrentMonth,
     getLoggedPaymentCount,
