@@ -12,6 +12,7 @@ import { Info, Target, CheckCircle, RotateCcw } from 'lucide-react';
 import { isAfter, addMonths, format, differenceInMonths } from 'date-fns';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
 
 const COLORS = [
   'hsl(var(--chart-1))',
@@ -207,9 +208,7 @@ export default function FixedExpensesPage() {
                                     {remainingMonths} / {totalMonths} months left
                                 </span>
                             </div>
-                            <div className="w-full bg-secondary rounded-full h-2.5">
-                                <div className="bg-primary h-2.5 rounded-full" style={{ width: `${progress}%` }}></div>
-                            </div>
+                            <Progress value={progress} className="h-2.5" />
                             <p className="text-xs text-right mt-1 text-muted-foreground">Ends on {format(endDate, 'MMM yyyy')}</p>
                         </div>
                     );
@@ -227,5 +226,7 @@ export default function FixedExpensesPage() {
     </div>
   );
 }
+
+    
 
     
