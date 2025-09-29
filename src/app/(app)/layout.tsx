@@ -41,7 +41,7 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-        if (!currentUser && !['/login', '/signup'].includes(pathname)) {
+        if (!currentUser && !['/login', '/signup', '/'].includes(pathname)) {
             router.replace('/login');
         } else {
             setAuthChecked(true);
@@ -54,12 +54,13 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (authChecked && user) {
         const isOnboardingPage = pathname === '/onboarding';
+        const isLandingPage = pathname === '/';
         const hasCompletedOnboarding = profile && profile.role;
 
-        if (!hasCompletedOnboarding && !isOnboardingPage) {
-            router.replace('/onboarding');
-        } else if (hasCompletedOnboarding && isOnboardingPage) {
+        if (hasCompletedOnboarding && (isOnboardingPage || isLandingPage)) {
             router.replace('/dashboard');
+        } else if (!hasCompletedOnboarding && !isOnboardingPage && !isLandingPage) {
+             router.replace('/onboarding');
         }
     }
   }, [profile, user, pathname, router, authChecked]);
@@ -72,8 +73,12 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
     );
   }
   
-  if (pathname === '/onboarding' || profile === null) {
+  if (pathname === '/onboarding' || profile === null && !['/', '/login', '/signup'].includes(pathname)) {
     return <>{children}</>;
+  }
+
+  if (['/', '/login', '/signup', '/onboarding'].includes(pathname)) {
+    return <>{children}</>
   }
 
 
