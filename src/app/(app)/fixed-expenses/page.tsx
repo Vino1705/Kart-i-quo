@@ -4,12 +4,14 @@
 import { useMemo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useApp } from '@/hooks/use-app';
-import { Pie, PieChart, ResponsiveContainer, Cell, Legend, Tooltip, Bar, BarChart, XAxis, YAxis } from 'recharts';
+import { Pie, PieChart, ResponsiveContainer, Cell, Legend, Tooltip } from 'recharts';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Info, Target } from 'lucide-react';
+import { Info, Target, CheckCircle } from 'lucide-react';
 import { isAfter, addMonths, format, differenceInMonths } from 'date-fns';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Badge } from '@/components/ui/badge';
 
 const COLORS = [
   'hsl(var(--chart-1))',
@@ -20,8 +22,10 @@ const COLORS = [
 ];
 
 export default function FixedExpensesPage() {
-  const { profile } = useApp();
+  const { profile, logFixedExpenseAsTransaction, getLoggedFixedExpensesForMonth } = useApp();
   const fixedExpenses = profile?.fixedExpenses || [];
+  
+  const loggedExpenseIds = getLoggedFixedExpensesForMonth();
 
   const chartData = useMemo(() => {
     return fixedExpenses.map(exp => ({ name: exp.name, value: exp.amount }));
@@ -65,6 +69,60 @@ export default function FixedExpensesPage() {
                 </AlertDescription>
             </Alert>
         )}
+      
+      <Card>
+        <CardHeader>
+          <CardTitle>Log Payments</CardTitle>
+          <CardDescription>Log your fixed expenses as transactions for this month ({format(new Date(), 'MMMM yyyy')}).</CardDescription>
+        </CardHeader>
+        <CardContent>
+           {fixedExpenses.length > 0 ? (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Expense</TableHead>
+                    <TableHead>Category</TableHead>
+                    <TableHead>Amount</TableHead>
+                    <TableHead className="text-right">Action</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {fixedExpenses.map(exp => {
+                    const isLogged = loggedExpenseIds.includes(exp.id);
+                    return (
+                      <TableRow key={exp.id}>
+                        <TableCell className="font-medium">{exp.name}</TableCell>
+                        <TableCell><Badge variant="secondary">{exp.category}</Badge></TableCell>
+                        <TableCell>₹{exp.amount.toFixed(2)}</TableCell>
+                        <TableCell className="text-right">
+                          <Button
+                            size="sm"
+                            onClick={() => logFixedExpenseAsTransaction(exp)}
+                            disabled={isLogged}
+                          >
+                            {isLogged ? (
+                              <>
+                                <CheckCircle className="mr-2 h-4 w-4" />
+                                Logged
+                              </>
+                            ) : (
+                              'Log as Paid'
+                            )}
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            ) : (
+              <div className="flex flex-col items-center justify-center h-[150px] text-center">
+                  <p className="text-muted-foreground">No fixed expenses recorded.</p>
+                  <p className="text-sm text-muted-foreground">Add them in your settings.</p>
+              </div>
+            )}
+        </CardContent>
+      </Card>
 
       <div className="grid gap-8 md:grid-cols-2">
         <Card>

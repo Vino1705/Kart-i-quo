@@ -14,14 +14,15 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Trash } from 'lucide-react';
 import React from 'react';
 import { useToast } from '@/hooks/use-toast';
-import { formatISO } from 'date-fns';
 import { Label } from '@/components/ui/label';
+import { expenseCategories } from '@/lib/types';
 
 
 const fixedExpenseSchema = z.object({
   id: z.string().optional(),
   name: z.string().min(1, 'Expense name is required'),
   amount: z.coerce.number().min(0, 'Amount must be positive'),
+  category: z.string().min(1, 'Category is required'),
   timelineMonths: z.coerce.number().optional(),
   startDate: z.string().optional(),
 });
@@ -125,12 +126,12 @@ export default function SettingsPage() {
               <p className="text-sm text-muted-foreground mb-4">Update your recurring expenses like rent, EMIs, or subscriptions.</p>
               <div className="space-y-4">
                 {fields.map((field, index) => (
-                  <div key={field.id} className="flex items-end gap-2">
+                  <div key={field.id} className="grid md:grid-cols-5 gap-2 items-end">
                     <FormField
                       control={form.control}
                       name={`fixedExpenses.${index}.name`}
                       render={({ field }) => (
-                        <FormItem className="flex-1">
+                        <FormItem className="md:col-span-2">
                           <FormLabel className="sr-only">Expense Name</FormLabel>
                           <FormControl>
                             <Input placeholder="Expense Name" {...field} />
@@ -139,12 +140,34 @@ export default function SettingsPage() {
                         </FormItem>
                       )}
                     />
+                     <FormField
+                        control={form.control}
+                        name={`fixedExpenses.${index}.category`}
+                        render={({ field }) => (
+                            <FormItem>
+                               <FormLabel className="sr-only">Category</FormLabel>
+                                <Select onValueChange={field.onChange} value={field.value}>
+                                    <FormControl>
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Category" />
+                                        </SelectTrigger>
+                                    </FormControl>
+                                    <SelectContent>
+                                        {expenseCategories.map(cat => (
+                                            <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                        />
                     <FormField
                       control={form.control}
       
                       name={`fixedExpenses.${index}.amount`}
                       render={({ field }) => (
-                        <FormItem className="w-1/4">
+                        <FormItem>
                           <FormLabel className="sr-only">Amount</FormLabel>
                           <FormControl>
                             <Input type="number" placeholder="Amount (₹)" {...field} />
@@ -157,7 +180,7 @@ export default function SettingsPage() {
                         control={form.control}
                         name={`fixedExpenses.${index}.timelineMonths`}
                         render={({ field }) => (
-                          <FormItem className="w-1/4">
+                          <FormItem>
                             <FormLabel className="sr-only">Timeline</FormLabel>
                             <FormControl>
                               <Input type="number" placeholder="Months (Opt)" {...field} />
@@ -177,7 +200,7 @@ export default function SettingsPage() {
                   variant="outline"
                   size="sm"
                   className="mt-4"
-                  onClick={() => append({ name: '', amount: 0, timelineMonths: undefined })}
+                  onClick={() => append({ name: '', amount: 0, category: 'Other', timelineMonths: undefined })}
                 >
                   Add Expense
                 </Button>

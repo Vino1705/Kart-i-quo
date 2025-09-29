@@ -15,6 +15,7 @@ export interface FixedExpense {
   id: string;
   name: string;
   amount: number;
+  category: string;
   timelineMonths?: number;
   startDate?: string;
 }

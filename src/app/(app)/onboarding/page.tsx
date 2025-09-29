@@ -14,11 +14,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Trash, Wallet, PiggyBank, ShoppingCart } from 'lucide-react';
 import React from 'react';
-import { formatISO } from 'date-fns';
+import { expenseCategories } from '@/lib/types';
 
 const fixedExpenseSchema = z.object({
   name: z.string().min(1, 'Expense name is required'),
   amount: z.coerce.number().min(0, 'Amount must be positive'),
+  category: z.string().min(1, 'Category is required'),
   timelineMonths: z.coerce.number().optional(),
 });
 
@@ -52,7 +53,7 @@ export default function OnboardingPage() {
     resolver: zodResolver(onboardingSchema),
     defaultValues: {
       income: 38000,
-      fixedExpenses: [{ name: 'Rent', amount: 18000 }],
+      fixedExpenses: [{ name: 'Rent', amount: 18000, category: 'Rent/EMI' }],
     },
   });
 
@@ -86,7 +87,7 @@ export default function OnboardingPage() {
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-background p-4">
-      <Card className="w-full max-w-2xl">
+      <Card className="w-full max-w-3xl">
         <CardHeader>
           <CardTitle className="text-2xl font-headline">Welcome to Kwik Kash!</CardTitle>
           <CardDescription>Let's set up your financial profile to tailor your experience.</CardDescription>
@@ -137,15 +138,15 @@ export default function OnboardingPage() {
                 <p className="text-sm text-muted-foreground mb-4">Enter expenses like rent, EMIs, or subscriptions. This helps us calculate your 'Needs'.</p>
                 <div className="space-y-4">
                   {fields.map((field, index) => (
-                    <div key={field.id} className="flex items-end gap-4">
+                    <div key={field.id} className="grid grid-cols-1 md:grid-cols-4 items-end gap-4">
                       <FormField
                         control={form.control}
                         name={`fixedExpenses.${index}.name`}
                         render={({ field }) => (
-                          <FormItem className="flex-1">
-                            <FormLabel className="sr-only">Expense Name</FormLabel>
+                          <FormItem className="md:col-span-2">
+                            <FormLabel>Expense Name</FormLabel>
                             <FormControl>
-                              <Input placeholder="Expense Name" {...field} />
+                              <Input placeholder="e.g., Rent" {...field} />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -155,29 +156,51 @@ export default function OnboardingPage() {
                         control={form.control}
                         name={`fixedExpenses.${index}.amount`}
                         render={({ field }) => (
-                          <FormItem className="w-1/3">
-                            <FormLabel className="sr-only">Amount</FormLabel>
+                          <FormItem>
+                            <FormLabel>Amount (₹)</FormLabel>
                             <FormControl>
-                              <Input type="number" placeholder="Amount (₹)" {...field} />
+                              <Input type="number" placeholder="Amount" {...field} />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
                         )}
                       />
-                      <FormField
+                       <FormField
+                        control={form.control}
+                        name={`fixedExpenses.${index}.category`}
+                        render={({ field }) => (
+                            <FormItem>
+                               <FormLabel>Category</FormLabel>
+                                <Select onValueChange={field.onChange} value={field.value}>
+                                    <FormControl>
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Category" />
+                                        </SelectTrigger>
+                                    </FormControl>
+                                    <SelectContent>
+                                        {expenseCategories.map(cat => (
+                                            <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                        />
+                         <FormField
                           control={form.control}
                           name={`fixedExpenses.${index}.timelineMonths`}
                           render={({ field }) => (
-                            <FormItem className="w-1/4">
-                              <FormLabel className="sr-only">Timeline</FormLabel>
+                            <FormItem>
+                              <FormLabel>Timeline (Months)</FormLabel>
                               <FormControl>
-                                <Input type="number" placeholder="Months (Opt)" {...field} />
+                                <Input type="number" placeholder="Optional" {...field} />
                               </FormControl>
                               <FormMessage />
                             </FormItem>
                           )}
                         />
-                      <Button type="button" variant="destructive" size="icon" onClick={() => remove(index)}>
+                      <Button type="button" variant="destructive" size="icon" onClick={() => remove(index)} className="md:col-start-5">
                         <Trash className="h-4 w-4" />
                       </Button>
                     </div>
@@ -188,7 +211,7 @@ export default function OnboardingPage() {
                     variant="outline"
                     size="sm"
                     className="mt-4"
-                    onClick={() => append({ name: '', amount: 0 })}
+                    onClick={() => append({ name: '', amount: 0, category: 'Other' })}
                   >
                     Add Expense
                   </Button>
