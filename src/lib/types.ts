@@ -36,6 +36,7 @@ export interface Transaction {
   category: string;
   description: string;
   date: string; // ISO string for simplicity
+  isFixedExpense?: boolean;
 }
 
 export const expenseCategories = [

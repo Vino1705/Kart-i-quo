@@ -177,13 +177,16 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     setTransactions(newTransactions);
     persistState('kwik-kash-transactions', newTransactions);
 
-    const todaysSpending = getTodaysSpending() + newTransaction.amount;
-    if (profile && todaysSpending > profile.dailySpendingLimit) {
-        toast({
-            variant: "destructive",
-            title: 'Daily Limit Exceeded!',
-            description: `You've spent ₹${todaysSpending.toFixed(2)} today, which is over your ₹${profile.dailySpendingLimit.toFixed(2)} limit.`,
-        });
+    // Only show toast for non-fixed expenses
+    if (!newTransaction.isFixedExpense) {
+      const todaysSpending = getTodaysSpending() + newTransaction.amount;
+      if (profile && todaysSpending > profile.dailySpendingLimit) {
+          toast({
+              variant: "destructive",
+              title: 'Daily Limit Exceeded!',
+              description: `You've spent ₹${todaysSpending.toFixed(2)} today, which is over your ₹${profile.dailySpendingLimit.toFixed(2)} limit.`,
+          });
+      }
     }
   };
 
@@ -224,7 +227,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   const getTodaysSpending = () => {
     const today = new Date().toISOString().split('T')[0];
     return transactions
-      .filter(t => t.date.startsWith(today))
+      .filter(t => t.date.startsWith(today) && !t.isFixedExpense)
       .reduce((sum, t) => sum + t.amount, 0);
   };
 
@@ -237,14 +240,16 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       return 0;
     }
 
-    const spendingByDay = transactions.reduce((acc, t) => {
-      const day = startOfDay(parseISO(t.date)).toISOString();
-      if (!acc[day]) {
-        acc[day] = 0;
-      }
-      acc[day] += t.amount;
-      return acc;
-    }, {} as { [key: string]: number });
+    const spendingByDay = transactions
+      .filter(t => !t.isFixedExpense)
+      .reduce((acc, t) => {
+        const day = startOfDay(parseISO(t.date)).toISOString();
+        if (!acc[day]) {
+          acc[day] = 0;
+        }
+        acc[day] += t.amount;
+        return acc;
+      }, {} as { [key: string]: number });
     
     const today = startOfDay(new Date()).toISOString();
 
@@ -300,7 +305,8 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     addTransaction({
         amount: expense.amount,
         category: expense.category,
-        description: `Fixed Expense: ${expense.name}`
+        description: `Fixed Expense: ${expense.name}`,
+        isFixedExpense: true,
     });
 
     const updatedLoggedExpenses = {
@@ -321,13 +327,6 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     const auth = getAuth(firebaseApp);
     try {
       await signOut(auth);
-      // Clear session state, but not persisted data
-      setProfile(null);
-      setGoals([]);
-      setTransactions([]);
-      setLoggedFixedExpenses({});
-      setOnboardingComplete(false);
-      
       router.push('/login');
     } catch (error) {
        console.error("Logout failed", error);
@@ -354,7 +353,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     deleteTransaction,
     getTotalGoalContributions,
     contributeToGoal,
-    getCumulativeDailySavings,
+getCumulativeDailySavings,
     logFixedExpenseAsTransaction,
     getLoggedFixedExpensesForMonth,
   };
