@@ -34,7 +34,7 @@ export default function AppLayoutContent({ children }: { children: React.ReactNo
     }
   }, [profile, user, pathname, router, authChecked]);
 
-  if (!authChecked || (user && profile === undefined && pathname !== '/onboarding')) {
+  if (!authChecked || (user && profile === undefined && pathname !== '/onboarding' && pathname !== '/')) {
     return (
       <div className="flex h-screen items-center justify-center">
         <p>Loading your experience...</p>
