@@ -16,6 +16,7 @@ import { ShieldAlert, Plus, Minus, PiggyBank, Pencil, History, TrendingUp, Trend
 import { format } from 'date-fns';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
 
 const fundActionSchema = z.object({
   amount: z.coerce.number().min(1, 'Amount must be positive'),
@@ -107,8 +108,8 @@ function SetTargetDialog() {
           <DialogTitle>Set Emergency Fund Target</DialogTitle>
           <DialogDescription>Your target should ideally cover 3-6 months of essential living expenses.</DialogDescription>
         </DialogHeader>
-        <div className="py-4">
-            <FormLabel>Target Amount (₹)</FormLabel>
+        <div className="py-4 space-y-2">
+            <Label>Target Amount (₹)</Label>
             <Input type="number" value={target} onChange={(e) => setTarget(Number(e.target.value))} />
         </div>
         <DialogFooter>
