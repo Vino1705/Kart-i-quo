@@ -40,6 +40,7 @@ const prompt = ai.definePrompt({
   name: 'spendingAlertsPrompt',
   input: {schema: SpendingAlertsInputSchema},
   output: {schema: SpendingAlertsOutputSchema},
+  model: 'gemini-1.5',
   prompt: `You are Kart-i-quo's proactive financial analyst. Your job is to analyze a user's spending habits and provide a concise, actionable suggestion for the next week.
 
 ## User's Financial Profile:

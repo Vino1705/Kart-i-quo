@@ -59,6 +59,7 @@ const prompt = ai.definePrompt({
   name: 'expenseAdjustmentRecommendationsPrompt',
   input: {schema: ExpenseAdjustmentRecommendationsInputSchema},
   output: {schema: ExpenseAdjustmentRecommendationsOutputSchema},
+  model: 'gemini-1.5',
   prompt: `You are a personal finance advisor. Your task is to provide a list of specific and actionable tips to help a user adjust their spending to meet their financial goals.
 
 ## User's Financial Profile:
