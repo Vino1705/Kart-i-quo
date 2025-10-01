@@ -54,28 +54,30 @@ function GoalDialog({ goal, children }: { goal?: Goal, children: React.ReactNode
     const newContribution = Number(monthlyContribution) || 0;
     const newTimeline = Number(timelineMonths) || 0;
 
-    const focusedElement = document.activeElement;
+    const focusedElement = typeof window !== 'undefined' ? document.activeElement : null;
     const focusedName = focusedElement?.getAttribute('name');
+    
+    if (newTarget <= 0) return;
 
-    if (newTarget > 0) {
-        if (focusedName === 'timelineMonths' && newTimeline > 0) {
-            const calculatedContribution = newTarget / newTimeline;
-            if (Math.abs(calculatedContribution - newContribution) > 0.01) {
-                setValue('monthlyContribution', parseFloat(calculatedContribution.toFixed(2)));
-            }
-        } else if (focusedName === 'monthlyContribution' && newContribution > 0) {
-            const calculatedTimeline = Math.ceil(newTarget / newContribution);
-             if (calculatedTimeline !== newTimeline) {
-                setValue('timelineMonths', calculatedTimeline);
-            }
-        } else if (focusedName === 'targetAmount') {
-             if (newContribution > 0) {
-                const calculatedTimeline = Math.ceil(newTarget / newContribution);
-                setValue('timelineMonths', calculatedTimeline);
-            } else if (newTimeline > 0) {
-                const calculatedContribution = newTarget / newTimeline;
-                setValue('monthlyContribution', parseFloat(calculatedContribution.toFixed(2)));
-            }
+    // If user is typing in the timeline, calculate the contribution
+    if (focusedName === 'timelineMonths' && newTimeline > 0) {
+      const calculatedContribution = newTarget / newTimeline;
+      if (Math.abs(calculatedContribution - newContribution) > 0.01) {
+        setValue('monthlyContribution', parseFloat(calculatedContribution.toFixed(2)));
+      }
+    } 
+    // If user is typing in the contribution, calculate the timeline
+    else if (focusedName === 'monthlyContribution' && newContribution > 0) {
+      const calculatedTimeline = Math.ceil(newTarget / newContribution);
+      if (calculatedTimeline !== newTimeline) {
+        setValue('timelineMonths', calculatedTimeline);
+      }
+    }
+     // If user is typing in the target amount, update timeline based on contribution
+    else if (focusedName === 'targetAmount' && newContribution > 0) {
+        const calculatedTimeline = Math.ceil(newTarget / newContribution);
+        if (calculatedTimeline !== newTimeline) {
+          setValue('timelineMonths', calculatedTimeline);
         }
     }
   }, [targetAmount, monthlyContribution, timelineMonths, setValue]);
@@ -430,5 +432,7 @@ export default function GoalsPage() {
     </div>
   );
 }
+
+    
 
     
