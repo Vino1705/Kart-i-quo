@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -27,7 +27,7 @@ const goalSchema = z.object({
   name: z.string().min(2, 'Goal name is required'),
   targetAmount: z.coerce.number().min(1, 'Target amount must be positive'),
   monthlyContribution: z.coerce.number().min(1, 'Contribution must be positive'),
-  timelineMonths: z.coerce.number().optional(),
+  timelineMonths: z.coerce.number().min(1, "Timeline must be at least 1 month").optional(),
 });
 
 type GoalValues = z.infer<typeof goalSchema>;
@@ -42,20 +42,51 @@ function GoalDialog({ goal, children }: { goal?: Goal, children: React.ReactNode
     resolver: zodResolver(goalSchema),
     defaultValues: isEditMode 
       ? { name: goal.name, targetAmount: goal.targetAmount, monthlyContribution: goal.monthlyContribution, timelineMonths: goal.timelineMonths }
-      : { name: '', targetAmount: 10000, monthlyContribution: 1000 },
+      : { name: '', targetAmount: 10000, monthlyContribution: 1000, timelineMonths: 10 },
   });
 
-  const { targetAmount, monthlyContribution } = form.watch();
+  const { targetAmount, monthlyContribution, timelineMonths } = form.watch();
+  const { setValue } = form;
 
-  const { timelineMonths, suggestion } = useMemo(() => {
+  // Handle automatic calculations
+  useEffect(() => {
+    const newTarget = Number(targetAmount) || 0;
+    const newContribution = Number(monthlyContribution) || 0;
+    const newTimeline = Number(timelineMonths) || 0;
+
+    const focusedElement = document.activeElement;
+    const focusedName = focusedElement?.getAttribute('name');
+
+    if (newTarget > 0) {
+        if (focusedName === 'timelineMonths' && newTimeline > 0) {
+            const calculatedContribution = newTarget / newTimeline;
+            if (Math.abs(calculatedContribution - newContribution) > 0.01) {
+                setValue('monthlyContribution', parseFloat(calculatedContribution.toFixed(2)));
+            }
+        } else if (focusedName === 'monthlyContribution' && newContribution > 0) {
+            const calculatedTimeline = Math.ceil(newTarget / newContribution);
+             if (calculatedTimeline !== newTimeline) {
+                setValue('timelineMonths', calculatedTimeline);
+            }
+        } else if (focusedName === 'targetAmount') {
+             if (newContribution > 0) {
+                const calculatedTimeline = Math.ceil(newTarget / newContribution);
+                setValue('timelineMonths', calculatedTimeline);
+            } else if (newTimeline > 0) {
+                const calculatedContribution = newTarget / newTimeline;
+                setValue('monthlyContribution', parseFloat(calculatedContribution.toFixed(2)));
+            }
+        }
+    }
+  }, [targetAmount, monthlyContribution, timelineMonths, setValue]);
+
+
+  const suggestion = useMemo(() => {
     if (targetAmount > 0 && monthlyContribution > 0) {
       const months = Math.ceil(targetAmount / monthlyContribution);
-      return {
-        timelineMonths: months,
-        suggestion: `At ₹${monthlyContribution.toLocaleString()}/month, you'll reach your goal in ~${months} months.`,
-      };
+      return `At ₹${monthlyContribution.toLocaleString()}/month, you'll reach your goal in ~${months} months.`;
     }
-    return { timelineMonths: 0, suggestion: 'Enter an amount and contribution to see a forecast.' };
+    return 'Enter an amount and contribution to see a forecast.';
   }, [targetAmount, monthlyContribution]);
 
   const totalSavings = profile?.monthlySavings || 0;
@@ -72,9 +103,9 @@ function GoalDialog({ goal, children }: { goal?: Goal, children: React.ReactNode
     }
 
     if (isEditMode) {
-      updateGoal(goal.id, {...data, timelineMonths });
+      updateGoal(goal.id, {...data, timelineMonths: data.timelineMonths || 0 });
     } else {
-      addGoal({...data, timelineMonths });
+      addGoal({...data, timelineMonths: data.timelineMonths || 0 });
     }
     form.reset();
     setOpen(false);
@@ -105,8 +136,7 @@ function GoalDialog({ goal, children }: { goal?: Goal, children: React.ReactNode
                 </FormItem>
               )}
             />
-             <div className="grid grid-cols-2 gap-4">
-                <FormField
+            <FormField
                 control={form.control}
                 name="targetAmount"
                 render={({ field }) => (
@@ -118,7 +148,8 @@ function GoalDialog({ goal, children }: { goal?: Goal, children: React.ReactNode
                     <FormMessage />
                     </FormItem>
                 )}
-                />
+            />
+             <div className="grid grid-cols-2 gap-4">
                  <FormField
                     control={form.control}
                     name="timelineMonths"
@@ -126,26 +157,27 @@ function GoalDialog({ goal, children }: { goal?: Goal, children: React.ReactNode
                         <FormItem>
                         <FormLabel>Timeline (Months)</FormLabel>
                         <FormControl>
-                            <Input type="number" placeholder="e.g., 12" {...field} />
+                            <Input type="number" placeholder="e.g., 12" {...field} value={field.value || ''}/>
                         </FormControl>
                         <FormMessage />
                         </FormItem>
                     )}
                     />
+                <FormField
+                control={form.control}
+                name="monthlyContribution"
+                render={({ field }) => (
+                    <FormItem>
+                    <FormLabel>Contribution (₹/mo)</FormLabel>
+                    <FormControl>
+                        <Input type="number" placeholder="e.g., 5000" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                    </FormItem>
+                )}
+                />
             </div>
-            <FormField
-              control={form.control}
-              name="monthlyContribution"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Monthly Contribution (₹)</FormLabel>
-                  <FormControl>
-                    <Input type="number" placeholder="e.g., 5000" {...field} />
-                  </FormControl>
-                   <FormMessage />
-                </FormItem>
-              )}
-            />
+            
              <Alert variant="default" className="text-sm">
                 <Target className="h-4 w-4" />
                 <AlertDescription>
@@ -398,3 +430,5 @@ export default function GoalsPage() {
     </div>
   );
 }
+
+    
