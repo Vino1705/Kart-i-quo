@@ -391,21 +391,12 @@ export default function GoalsPage() {
                     <Progress value={amountProgress} className="w-full h-2" />
                   </div>
 
-                  {goal.timelineMonths > 0 && goal.startDate && (
-                     <div>
-                        <div className="flex justify-between text-sm mb-1">
-                            <span className="text-muted-foreground">Timeline</span>
-                            <span>{elapsedMonths} of {goal.timelineMonths} months</span>
-                        </div>
-                        <Progress value={timeProgress} className="w-full h-2" />
-                     </div>
-                  )}
-
                   <p className="text-xs text-muted-foreground pt-2">
                     {remainingMonthsByAmount > 0
                       ? `~${remainingMonthsByAmount} months remaining at ₹${goal.monthlyContribution.toFixed(2)}/month.`
                       : "Congratulations! You've reached this goal."
                     }
+                    {goal.timelineMonths > 0 && ` Target: ${goal.timelineMonths} months.`}
                   </p>
                 </CardContent>
                 <CardFooter className="flex gap-2">
@@ -432,7 +423,3 @@ export default function GoalsPage() {
     </div>
   );
 }
-
-    
-
-    
